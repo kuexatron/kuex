@@ -7,13 +7,15 @@
         #app { background: #262626; padding: 40px; border-radius: 12px; border: 1px solid #4499aa; text-align: center; width: 80%; max-width: 600px; font-family: sans-serif; }
         
         #metadata { color: #44bbaa; margin: 0 0 10px 0; font-family: sans-serif; font-size: 1rem; }
-        #question { font-family: 'Times New Roman', Times, serif; font-size: 2rem; letter-spacing: 1px; }
+        #question { font-family: 'Times New Roman', Times, serif; font-size: 2.2rem; letter-spacing: 1px; margin: 10px 0 20px 0; }
         
-        button { background: #4499aa; color: white; border: none; padding: 12px 24px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; font-weight: bold; }
-        button:hover { background: #357a88; }
+        button { background: #4499aa; color: white; border: none; padding: 12px 24px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; font-weight: bold; transition: 0.2s; }
+        button:hover { background: #357a88; transform: scale(1.05); }
         input { padding: 12px; font-size: 1.5rem; width: 80%; margin-bottom: 15px; background: #333; border: 1px solid #555; color: white; border-radius: 4px; text-align: center; }
         
-        .hud { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #44bbaa; }
+        select { background: #333; color: white; border: 1px solid #4499aa; padding: 10px; font-size: 1rem; border-radius: 4px; margin-bottom: 20px; width: 80%; }
+        
+        .hud { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #44bbaa; border-bottom: 1px solid #444; padding-bottom: 10px; }
         #timer { color: #ff6b6b; display: none; }
     </style>
 </head>
@@ -21,8 +23,17 @@
     <div id="app">
         <div id="menu">
             <h1>UIL Number Sense</h1>
-            <button onclick="startGlobalPractice()">Global Practice (Infinite, No Timer)</button>
-            <button onclick="showColumns()">Knockout Drill (9s per question)</button>
+            
+            <select id="source-filter">
+                <option value="all">All Sources (Official + Auto)</option>
+                <option value="official">Official UIL Tests Only</option>
+                <option value="heath">Bryan Heath (Auto-Generated) Only</option>
+            </select>
+            <br>
+
+            <button onclick="startGlobalPractice()">Global Practice (Infinite)</button>
+            <button onclick="showColumns()">Knockout Drill</button>
+            
             <div id="col-select" style="display:none; margin-top:20px;">
                 <button onclick="startDrill('column1')">Col 1</button>
                 <button onclick="startDrill('column2')">Col 2</button>
@@ -40,7 +51,7 @@
             <h4 id="metadata"></h4>
             <h2 id="question"></h2>
             
-            <input type="text" id="answer" placeholder="Answer..." autofocus onkeydown="if(event.key==='Enter') checkAnswer()">
+            <input type="text" id="answer" placeholder="Answer..." autofocus autocomplete="off" onkeydown="if(event.key==='Enter') checkAnswer()">
             <br>
             <button onclick="checkAnswer()">Submit</button>
             <button id="skip-btn" onclick="skip()">Skip</button>
@@ -49,92 +60,8 @@
         </div>
     </div>
 
-    <script src="database.js"></script> <script>
-        // PASTE THE QUESTION DATABASE BLOCK HERE
-       const questionDatabase = {
-            "column1": [
-                {"q":"3/4 + 2/3 =","a":"17/12", "test":"001", "num":"1"},
-                {"q":"25 * 215 =","a":"5375", "test":"001", "num":"2"},
-                {"q":".075 =","a":"3/40", "test":"001", "num":"3"},
-                {"q":"(24+18)/12*(3-6) =","a":"-10.5", "test":"001", "num":"4"},
-                {"q":"7.5% =","a":"3/40", "test":"001", "num":"5"},
-                {"q":"263 / 5 =","a":"52.6", "test":"001", "num":"6"},
-                {"q":"28/11 + 82/11 =","a":"10", "test":"001", "num":"7"},
-                {"q":"XLII =","a":"42", "test":"001", "num":"8"},
-                {"q":"13+18+23+28+33+38 =","a":"153", "test":"001", "num":"11"},
-                {"q":"MMVIII - MIV =","a":"1004", "test":"001", "num":"12"},
-                {"q":"12 * 17 =","a":"204", "test":"001", "num":"13"},
-                {"q":"34^2 =","a":"1156", "test":"001", "num":"15"},
-                {"q":"9 + 10 * 11 - 12 =","a":"107", "test":"001", "num":"18"},
-                {"q":"972 - 279 =","a":"693", "test":"002", "num":"1"},
-                {"q":"17 + 9 - 13 + 23 =","a":"36", "test":"002", "num":"2"},
-                {"q":"6/13 * 26/15 * 5/12 =","a":"1/3", "test":"002", "num":"3"},
-                {"q":"1 1/16% =","a":"17/1600", "test":"002", "num":"4"},
-                {"q":"75 * .84 =","a":"63", "test":"002", "num":"5"},
-                {"q":"3^0 + 2*5 + 4^-1 =","a":"11.25", "test":"002", "num":"7"},
-                {"q":"2013 - 201 + 13 =","a":"1825", "test":"002", "num":"8"},
-                {"q":"14 * 32 =","a":"448", "test":"003", "num":"1"},
-                {"q":"27 * 25 =","a":"675", "test":"003", "num":"4"},
-                {"q":"2006 / 9 =","a":"222 8/9", "test":"003", "num":"5"},
-                {"q":"21 * 12 =","a":"252", "test":"003", "num":"6"}
-            ],
-            "column2": [
-                {"q":"6 pints is what percent of a gallon?","a":"75", "test":"001", "num":"24"},
-                {"q":"1421 / 9 =","a":"157 8/9", "test":"001", "num":"27"},
-                {"q":"(4)^-1 + (4)^-2 =","a":".3125", "test":"001", "num":"28"},
-                {"q":"If a=5 and b=3 then (a-b)(a^2+ab+b^2) =","a":"98", "test":"001", "num":"32"},
-                {"q":"|6 - |-3 - 6|| =","a":"3", "test":"001", "num":"37"},
-                {"q":"14443 * 15 =","a":"216645", "test":"001", "num":"39"},
-                {"q":"LCM of 32 and 72 is","a":"288", "test":"002", "num":"28"},
-                {"q":"14443 * 17 =","a":"245531", "test":"002", "num":"31"},
-                {"q":"75 * 284 =","a":"21300", "test":"002", "num":"32"},
-                {"q":"38% of 42 is 76% of","a":"21", "test":"002", "num":"34"},
-                {"q":"1 gallon = ? ounces","a":"128", "test":"002", "num":"39"},
-                {"q":"43 * 57 =","a":"2451", "test":"003", "num":"25"},
-                {"q":"Set {m,e,n,t,a,l} intersect {m,a,t,h} has ? elements","a":"3", "test":"003", "num":"31"},
-                {"q":"14443 * 17 =","a":"245531", "test":"003", "num":"32"},
-                {"q":"9 - 7 * (5+3) / 1 =","a":"-47", "test":"003", "num":"35"},
-                {"q":"If x=-3 and y=-2 then x^2 - 2xy + y^2 =","a":"1", "test":"003", "num":"38"},
-                {"q":"If 5x + 7 = 6x - 2 then x =","a":"9", "test":"003", "num":"39"}
-            ],
-            "column3": [
-                {"q":"13 * 15 + 1 =","a":"196", "test":"001", "num":"46"},
-                {"q":"45 * 95 =","a":"4275", "test":"001", "num":"48"},
-                {"q":"12 + 9 + 6.75 + ... =","a":"48", "test":"001", "num":"51"},
-                {"q":"102 * 109 =","a":"11118", "test":"001", "num":"52"},
-                {"q":"14443 * 29 =","a":"418847", "test":"002", "num":"47"},
-                {"q":"36^2 + 57^2 =","a":"4545", "test":"002", "num":"53"},
-                {"q":"33 * 32 =","a":"1056", "test":"002", "num":"57"},
-                {"q":"212 * 311 =","a":"65932", "test":"003", "num":"41"},
-                {"q":"14 * 25 + 12.5 * 28 =","a":"700", "test":"003", "num":"43"},
-                {"q":"9^6 * 9^-4 / 9^-2 = 9^k, then k =","a":"4", "test":"003", "num":"44"},
-                {"q":"If 4x + 5 > 20 then x >","a":"3.75", "test":"003", "num":"47"},
-                {"q":"123 * 301 =","a":"37023", "test":"003", "num":"56"},
-                {"q":"18% of 266 is","a":"47.88", "test":"003", "num":"57"},
-                {"q":"62 * 68 =","a":"4216", "test":"003", "num":"58"}
-            ],
-            "column4": [
-                {"q":"sin(13pi/6) =","a":".5", "test":"001", "num":"61"},
-                {"q":"tan(pi/3) =","a":"sqrt(3)", "test":"001", "num":"63"},
-                {"q":"1^2 - 2^2 + 3^2 - 4^2 ... - 10^2 =","a":"-55", "test":"001", "num":"65"},
-                {"q":"ln(e^2) =","a":"2", "test":"001", "num":"67"},
-                {"q":"lim x->0 (e^x - 1)/x =","a":"1", "test":"001", "num":"75"},
-                {"q":"f(x) = 3x^2 - 2x + 1 then f'(-4) =","a":"-26", "test":"001", "num":"77"},
-                {"q":"sin(13pi/6) =","a":".5", "test":"002", "num":"61"},
-                {"q":"cos(arcsin 0) =","a":"1", "test":"002", "num":"64"},
-                {"q":"1^2 - 2^2 + 3^2 - 4^2 ... - 10^2 =","a":"-55", "test":"002", "num":"69"},
-                {"q":"lim x->0 (e^x - 1)/x =","a":"1", "test":"002", "num":"77"},
-                {"q":"sin(13pi/6) =","a":".5", "test":"003", "num":"63"},
-                {"q":"sin(arccos .6) =","a":".8", "test":"003", "num":"65"},
-                {"q":"111 * 56 =","a":"6216", "test":"003", "num":"66"},
-                {"q":"1^3 + 2^3 + 3^3 + ... + 6^3 =","a":"441", "test":"003", "num":"70"},
-                {"q":"int 1 to 2 x^3 dx =","a":"15/4", "test":"003", "num":"73"},
-                {"q":"f(x) = x + 1/x has _ asymptotes","a":"2", "test":"003", "num":"74"},
-                {"q":"f(x) = 4x/5 then f^-1(2) =","a":"2.5", "test":"003", "num":"75"},
-                {"q":"log_2[log_2(log_2(256))] =","a":"1", "test":"003", "num":"78"}
-            ]
-        };
-
+    <script src="database.js"></script> 
+    <script>
         let mode = '', activeQuestions = [], currentQ = null;
         let index = 0, streak = 0, timeLeft = 9, timerInterval;
 
@@ -151,8 +78,18 @@
 
         function showColumns() { document.getElementById('col-select').style.display = 'block'; }
 
+        function filterQuestions(questionArray) {
+            const filter = document.getElementById('source-filter').value;
+            if (filter === 'all') return questionArray;
+            return questionArray.filter(q => q.source === filter);
+        }
+
         function startGlobalPractice() {
-            activeQuestions = [...questionDatabase.column1, ...questionDatabase.column2, ...questionDatabase.column3, ...questionDatabase.column4];
+            let allQ = [...questionDatabase.column1, ...questionDatabase.column2, ...questionDatabase.column3, ...questionDatabase.column4];
+            activeQuestions = filterQuestions(allQ);
+            
+            if (activeQuestions.length === 0) { alert("No questions found for this filter!"); return; }
+
             mode = 'practice';
             document.getElementById('timer').style.display = 'none';
             document.getElementById('skip-btn').style.display = 'inline-block';
@@ -160,7 +97,10 @@
         }
 
         function startDrill(col) {
-            activeQuestions = questionDatabase[col];
+            activeQuestions = filterQuestions(questionDatabase[col]);
+            
+            if (activeQuestions.length === 0) { alert("No questions found for this filter in " + col + "!"); return; }
+
             mode = 'drill';
             document.getElementById('timer').style.display = 'block';
             document.getElementById('skip-btn').style.display = 'none';
@@ -180,9 +120,11 @@
             
             currentQ = activeQuestions[Math.floor(Math.random() * activeQuestions.length)];
             
-            document.getElementById('metadata').innerText = "Test " + currentQ.test + " • Question #" + currentQ.num;
-            document.getElementById('question').innerHTML = formatMath(currentQ.q);
+            // Format Metadata text cleanly based on source
+            let sourceText = currentQ.source === 'official' ? 'Official' : 'Auto';
+            document.getElementById('metadata').innerText = `Test ${currentQ.test} | Question #${currentQ.num} | [${sourceText}]`;
             
+            document.getElementById('question').innerHTML = formatMath(currentQ.q);
             document.getElementById('answer').value = "";
             document.getElementById('feedback').innerText = "";
             document.getElementById('answer').focus();
@@ -193,9 +135,7 @@
                 timerInterval = setInterval(() => {
                     timeLeft--;
                     document.getElementById('timer').innerText = "Time: " + timeLeft;
-                    if(timeLeft <= 0) { 
-                        knockout("Time's up!"); 
-                    }
+                    if(timeLeft <= 0) { knockout("Time's up!"); }
                 }, 1000);
             }
         }
@@ -227,20 +167,9 @@
             exit();
         }
 
-        function updateHUD() {
-            document.getElementById('streak-counter').innerText = "Streak: " + streak;
-        }
-
-        function skip() { 
-            streak = 0;
-            updateHUD();
-            loadQuestion(); 
-        }
-
-        function exit() { 
-            clearInterval(timerInterval); 
-            location.reload();
-        }
+        function updateHUD() { document.getElementById('streak-counter').innerText = "Streak: " + streak; }
+        function skip() { streak = 0; updateHUD(); loadQuestion(); }
+        function exit() { clearInterval(timerInterval); location.reload(); }
     </script>
 </body>
 </html>
