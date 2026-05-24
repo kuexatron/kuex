@@ -13,7 +13,7 @@
         button:hover { background: #357a88; transform: scale(1.05); }
         input { padding: 12px; font-size: 1.5rem; width: 80%; margin-bottom: 15px; background: #333; border: 1px solid #555; color: white; border-radius: 4px; text-align: center; }
         
-        select { background: #333; color: white; border: 1px solid #4499aa; padding: 10px; font-size: 1rem; border-radius: 4px; margin-bottom: 20px; width: 80%; }
+        select { background: #333; color: white; border: 1px solid #4499aa; padding: 10px; font-size: 1rem; border-radius: 4px; margin-bottom: 20px; width: 80%; cursor: pointer; }
         
         .hud { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #44bbaa; border-bottom: 1px solid #444; padding-bottom: 10px; }
         #timer { color: #ff6b6b; display: none; }
@@ -34,7 +34,16 @@
             <button onclick="startGlobalPractice()">Global Practice (Infinite)</button>
             <button onclick="showColumns()">Knockout Drill</button>
             
-            <div id="col-select" style="display:none; margin-top:20px;">
+            <div id="col-select" style="display:none; margin-top:20px; padding-top: 15px; border-top: 1px solid #444;">
+                <h3 style="margin-top: 0;">Select Difficulty & Column</h3>
+                
+                <select id="difficulty-filter">
+                    <option value="easy">Easy (9s to 20s)</option>
+                    <option value="medium" selected>Medium (6s to 15s)</option>
+                    <option value="hard">Hard / State Qualifier (3s to 12s)</option>
+                </select>
+                <br>
+
                 <button onclick="startDrill('column1')">Col 1</button>
                 <button onclick="startDrill('column2')">Col 2</button>
                 <button onclick="startDrill('column3')">Col 3</button>
@@ -64,112 +73,8 @@
     <script>
         let mode = '', activeQuestions = [], currentQ = null;
         let index = 0, streak = 0, timeLeft = 9, timerInterval;
+        let currentDrillTime = 9; // Stores the specific time for the chosen diff/col
 
-        function formatMath(str) {
-            return str
-                .replace(/\^([0-9\-\.]+)/g, '<sup>$1</sup>')
-                .replace(/_([0-9a-zA-Z]+)/g, '<sub>$1</sub>')
-                .replace(/pi/g, 'π')
-                .replace(/sqrt\(/g, '√(')
-                .replace(/int /g, '∫ ')
-                .replace(/<=/g, '≤')
-                .replace(/>=/g, '≥');
-        }
-
-        function showColumns() { document.getElementById('col-select').style.display = 'block'; }
-
-        function filterQuestions(questionArray) {
-            const filter = document.getElementById('source-filter').value;
-            if (filter === 'all') return questionArray;
-            return questionArray.filter(q => q.source === filter);
-        }
-
-        function startGlobalPractice() {
-            let allQ = [...questionDatabase.column1, ...questionDatabase.column2, ...questionDatabase.column3, ...questionDatabase.column4];
-            activeQuestions = filterQuestions(allQ);
-            
-            if (activeQuestions.length === 0) { alert("No questions found for this filter!"); return; }
-
-            mode = 'practice';
-            document.getElementById('timer').style.display = 'none';
-            document.getElementById('skip-btn').style.display = 'inline-block';
-            start();
-        }
-
-        function startDrill(col) {
-            activeQuestions = filterQuestions(questionDatabase[col]);
-            
-            if (activeQuestions.length === 0) { alert("No questions found for this filter in " + col + "!"); return; }
-
-            mode = 'drill';
-            document.getElementById('timer').style.display = 'block';
-            document.getElementById('skip-btn').style.display = 'none';
-            start();
-        }
-
-        function start() {
-            streak = 0;
-            updateHUD();
-            document.getElementById('menu').style.display = 'none';
-            document.getElementById('quiz').style.display = 'block';
-            loadQuestion();
-        }
-
-        function loadQuestion() {
-            clearInterval(timerInterval);
-            
-            currentQ = activeQuestions[Math.floor(Math.random() * activeQuestions.length)];
-            
-            // Format Metadata text cleanly based on source
-            let sourceText = currentQ.source === 'official' ? 'Official' : 'Auto';
-            document.getElementById('metadata').innerText = `Test ${currentQ.test} | Question #${currentQ.num} | [${sourceText}]`;
-            
-            document.getElementById('question').innerHTML = formatMath(currentQ.q);
-            document.getElementById('answer').value = "";
-            document.getElementById('feedback').innerText = "";
-            document.getElementById('answer').focus();
-
-            if (mode === 'drill') {
-                timeLeft = 9;
-                document.getElementById('timer').innerText = "Time: " + timeLeft;
-                timerInterval = setInterval(() => {
-                    timeLeft--;
-                    document.getElementById('timer').innerText = "Time: " + timeLeft;
-                    if(timeLeft <= 0) { knockout("Time's up!"); }
-                }, 1000);
-            }
-        }
-
-        function checkAnswer() {
-            const userAns = document.getElementById('answer').value.trim();
-            
-            if(userAns === currentQ.a) { 
-                streak++;
-                updateHUD();
-                document.getElementById('feedback').style.color = "#44bbaa";
-                document.getElementById('feedback').innerText = "Correct!"; 
-                setTimeout(loadQuestion, 300);
-            } else { 
-                if (mode === 'drill') {
-                    knockout("Wrong Answer! The correct answer was: " + currentQ.a);
-                } else {
-                    streak = 0;
-                    updateHUD();
-                    document.getElementById('feedback').style.color = "#ff6b6b";
-                    document.getElementById('feedback').innerText = "Wrong! Answer: " + currentQ.a; 
-                }
-            }
-        }
-
-        function knockout(reason) {
-            clearInterval(timerInterval);
-            alert("KNOCKOUT!\n\n" + reason + "\n\nFinal Streak: " + streak);
-            exit();
-        }
-
-        function updateHUD() { document.getElementById('streak-counter').innerText = "Streak: " + streak; }
-        function skip() { streak = 0; updateHUD(); loadQuestion(); }
-        function exit() { clearInterval(timerInterval); location.reload(); }
-    </script>
-</body>
-</html>
+        // The Timing Matrix
+        const drillTimes = {
+            'easy': { 'column1': 9, 'column2': 12, 'column3': 15, 'column4':
