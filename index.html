@@ -5,41 +5,36 @@
     <style>
         body { background-color: #1a1a1a; color: #e0e0e0; font-family: 'Times New Roman', Times, serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
         #app { background: #262626; padding: 40px; border-radius: 12px; border: 1px solid #4499aa; text-align: center; width: 100%; max-width: 650px; font-family: sans-serif; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        
         #metadata { color: #44bbaa; margin: 0 0 5px 0; font-size: 1rem; }
         #format-hint { color: #aaaaaa; font-style: italic; margin: 0 0 15px 0; font-size: 0.9rem; }
         #question { font-family: 'Times New Roman', Times, serif; font-size: 2.5rem; letter-spacing: 1px; margin: 10px 0 20px 0; }
-        
         button { background: #4499aa; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; font-weight: bold; transition: 0.2s; }
         button:hover { background: #357a88; transform: scale(1.05); }
         .btn-giveup { background: #ff6b6b; }
         .btn-giveup:hover { background: #cc5555; }
-        
         input { padding: 12px; font-size: 1.5rem; width: 80%; margin-bottom: 15px; background: #333; border: 1px solid #555; color: white; border-radius: 4px; text-align: center; }
         input:disabled { background: #222; color: #888; border-color: #444; }
-        
         select { background: #333; color: white; border: 1px solid #4499aa; padding: 10px; font-size: 1rem; border-radius: 4px; margin-bottom: 15px; width: 90%; cursor: pointer; }
-        
         .hud { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #44bbaa; border-bottom: 1px solid #444; padding-bottom: 10px; }
         #timer { color: #ff6b6b; display: none; }
         
+        /* Trick Review Section */
         #review-panel { display: none; background: #1f1f1f; border-left: 4px solid #44bbaa; padding: 15px; margin-top: 20px; text-align: left; border-radius: 0 4px 4px 0; }
         #trick-title { margin: 0 0 10px 0; color: #44bbaa; }
         #trick-text { margin: 0; line-height: 1.5; color: #ddd; }
         #correct-answer-display { font-size: 1.2rem; color: #44bbaa; margin-bottom: 15px; font-weight: bold; }
+        #trick-image { max-width: 100%; margin-top: 15px; border-radius: 4px; border: 1px solid #444; display: none; }
     </style>
 </head>
 <body>
     <div id="app">
         <div id="menu">
             <h1>UIL Number Sense</h1>
-            
             <select id="source-filter">
                 <option value="all">All Sources (Official + Auto)</option>
                 <option value="official">Official UIL Tests Only</option>
                 <option value="heath">Bryan Heath (Auto-Generated) Only</option>
             </select>
-
             <button onclick="startGlobalPractice()">Global Practice</button>
             <button onclick="showColumns()">Knockout Drill</button>
             
@@ -70,23 +65,21 @@
             
             <input type="text" id="answer" placeholder="Answer..." autofocus autocomplete="off" onkeydown="if(event.key==='Enter') checkAnswer()">
             <br>
-            
             <div id="action-buttons">
                 <button onclick="checkAnswer()">Submit</button>
                 <button id="skip-btn" onclick="skip()">Skip</button>
                 <button id="giveup-btn" class="btn-giveup" onclick="giveUp()">Give Up</button>
             </div>
-            
             <div id="next-buttons" style="display:none;">
                 <button onclick="loadQuestion()" style="width: 100%; padding: 15px; font-size: 1.2rem;">Next Question</button>
             </div>
-
             <p id="feedback" style="font-size: 1.2rem; font-weight: bold; margin-top: 15px;"></p>
 
             <div id="review-panel">
                 <div id="correct-answer-display"></div>
                 <h3 id="trick-title"></h3>
                 <p id="trick-text"></p>
+                <img id="trick-image" src="" alt="Trick Example">
             </div>
 
             <br><button onclick="exit()" style="background: transparent; border: 1px solid #555; color: #888;">Exit to Menu</button>
@@ -171,6 +164,8 @@
             document.getElementById('review-panel').style.display = 'none';
             document.getElementById('action-buttons').style.display = 'block';
             document.getElementById('next-buttons').style.display = 'none';
+            document.getElementById('trick-image').style.display = 'none'; // Hide old image
+            
             const answerInput = document.getElementById('answer');
             answerInput.disabled = false;
             answerInput.value = "";
@@ -257,6 +252,13 @@
             if (trick) {
                 document.getElementById('trick-title').innerText = "Trick: " + trick.title;
                 document.getElementById('trick-text').innerText = trick.text;
+                
+                // NEW: Load image if it exists
+                if (trick.img) {
+                    document.getElementById('trick-image').src = trick.img;
+                    document.getElementById('trick-image').style.display = 'block';
+                }
+                
                 document.getElementById('review-panel').style.display = 'block';
             }
             
