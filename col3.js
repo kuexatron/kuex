@@ -9,9 +9,9 @@ const column3 = [
     {"q":"33 * 32 =","a":["1056"], "test":"002", "num":"57", "source":"official", "trickId":"t_consecutive_mult"},
     {"q":"212 * 311 =","a":["65932"], "test":"003", "num":"41", "source":"official", "trickId":"t_foil"},
     {"q":"14 * 25 + 12.5 * 28 =","a":["700"], "test":"003", "num":"43", "source":"official", "trickId":"t_shared_factor"},
-    {"q":"9^6 * 9^-4 / 9^-2 = 9^k, then k =","a":["4"], "test":"003", "num":"44", "source":"official", "trickId":"t_raw_math"},
-    {"q":"If 4x + 5 > 20 then x >","a":["3.75", "15/4", "3 3/4", "3-3/4"], "test":"003", "num":"47", "source":"official", "trickId":"t_raw_math"},
+    {"q":"9^6 * 9^-4 / 9^-2 = 9^k, then k =","a":["4"], "test":"003", "num":"44", "source":"official", "trickId":"t_exponent_rules"},
+    {"q":"If 4x + 5 > 20 then x >","a":["3.75", "15/4", "3 3/4", "3-3/4"], "test":"003", "num":"47", "source":"official", "trickId":"t_linear_inequality"},
     {"q":"123 * 301 =","a":["37023"], "test":"003", "num":"56", "source":"official", "trickId":"t_distributive"},
-    {"q":"18% of 266 is","a":["47.88", "1197/25", "47 22/25", "47-22/25"], "test":"003", "num":"57", "source":"official", "trickId":"t_raw_math"},
+    {"q":"18% of 266 is","a":["47.88", "1197/25", "47 22/25", "47-22/25"], "test":"003", "num":"57", "source":"official", "trickId":"t_perc_frac"},
     {"q":"62 * 68 =","a":["4216"], "test":"003", "num":"58", "source":"official", "trickId":"t_mult_units_10"}
 ];
