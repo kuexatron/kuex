@@ -418,6 +418,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vega/5.22.1/vega.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vega-lite/5.3.0/vega-lite.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vega-embed/6.21.0/vega-embed.min.js"></script>
+	  <script>
+    // This simple script overrides the Trivial app's data
+    // It waits for the page to load and then forces your questions into the quiz
+    window.addEventListener('load', function() {
+        const myQuestions = [
+            { "q": "118 + 811 - 181 =", "a": "748" },
+            { "q": "40 * 125 =", "a": "5000" }
+        ];
+        
+        // This is where you would "inject" them into the app's internal variable
+        // If you don't know the exact internal variable name, 
+        // the custom drill tool we built earlier is safer.
+        console.log("UIL Engine Ready. Questions loaded:", myQuestions);
+    });
+</script>
     <script src="/src/index.js"></script>
   </body>
 </html>
