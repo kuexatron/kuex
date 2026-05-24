@@ -2,86 +2,119 @@ const tricksDatabase = {
     // ==========================================
     // 1. OFFICIAL MANUAL TRICKS
     // ==========================================
-    "t_foil": { "title": "FOILing / LIOFing", "text": "LIOFing (Last-Inner+Outer-First) is the standard method for 2-digit by 2-digit multiplication. 1) Multiply Last digits. 2) Multiply Inner digits + Outer digits (add any carry). 3) Multiply First digits (add carry). Move 'down the line'." },
-    "t_mult_11": { "title": "Multiplying by 11 (or 111)", "text": "Write the ones digit. Then add consecutive digits down the line (for 11, add pairs; for 111, add triples). Keep track of carries. The final digit is the leading digit (plus carry)." },
+    "t_foil": { "title": "FOILing / LIOFing", "text": "LIOFing (Last-Inner+Outer-First) is the standard method for 2-digit by 2-digit multiplication. 1) Multiply Last digits. 2) Multiply Inner digits + Outer digits (add any carry). 3) Multiply First digits (add carry)." },
+    "t_mult_11": { "title": "Multiplying by 11", "text": "Write the ones digit. Then add consecutive digits down the line. Keep track of carries. The final digit is the leading digit (plus carry)." },
     "t_mult_25": { "title": "Multiplying by 25", "text": "Treat 25 as 100/4. Divide the other number by 4, then multiply by 100 (move the decimal two places right). Example: 84 * 25 = (84/4) * 100 = 2100." },
     "t_double_half": { "title": "Double and Half Trick", "text": "To multiply two numbers, double one and halve the other. Highly useful when one number ends in 5 or is an even teen. Example: 14 * 32 = 7 * 64 = 448." },
-    "t_mult_near_100": { "title": "Multiplying Two Numbers Near 100", "text": "Find how far each is from 100. Tens/Ones digit: multiply the differences. Rest of answer: add the difference of one number to the other. Example: 102 * 109 -> (2*9=18), (102+9=111) -> 11118." },
+    "t_mult_near_100": { "title": "Multiplying Two Numbers Near 100", "text": "Find how far each is from 100. Tens/Ones digit: multiply the differences. Rest of answer: add the difference of one number to the other." },
     "t_diff_squares": { "title": "Difference of Squares", "text": "Use a^2 - b^2 = (a - b)(a + b). Turns difficult squaring into simple multiplication." },
     "t_mult_end_5": { "title": "Multiplying Two Numbers Ending in 5", "text": "If the tens sum is even, it ends in 25; if odd, 75. Leading digits: multiply the tens together, then add half the sum of the tens (drop any remainder)." },
     "t_mult_units_10": { "title": "Units Add to 10, Rest is the Same", "text": "Multiply the units for the last two digits. Multiply the leading digit by one greater than itself for the front. E.g., 62 * 68 -> (2*8=16), (6*7=42) -> 4216." },
     "t_div_5": { "title": "Dividing by 5", "text": "Dividing by 5 is the same as multiplying by 2 and moving the decimal point one place to the left. (e.g., 263 * 2 = 526 -> 52.6)." },
-    "t_div_9_trick": { "title": "Dividing by 9 (Finding the Quotient & Remainder)", "text": "To find the remainder when dividing by 9, add the digits of the number. If that sum > 9, add them again. The final single digit is the remainder (the numerator over 9)." },
-    "t_frac_add": { "title": "Adding Fractions", "text": "For a/b + c/d: Multiply diagonally and add for the numerator (ad + bc). Multiply denominators for the bottom (bd). E.g., 3/4 + 2/3 = (9+8)/12 = 17/12." },
-    "t_perc_frac": { "title": "Percentages to Fractions", "text": "Memorize fraction families. 1/8 = 12.5%, 1/16 = 6.25%, 1/40 = 2.5%. Use these building blocks to convert percentages into fractions quickly." },
+    
+    // HEAVILY REVISED DIVIDE BY 9 TRICK
+    "t_div_9_trick": { 
+        "title": "Dividing by 9 (Quotient & Remainder)", 
+        "text": "1. Bring down the first digit of the dividend—this is the first digit of your answer.\n2. Add that digit to the NEXT digit in the dividend. This sum is the second digit of your answer.\n3. Keep adding the current sum to the next digit in the dividend.\n4. The final sum you get at the very end is the remainder. (Put it over 9 for the fraction). Example for 1421 / 9: Bring down 1. (1+4=5). (5+2=7). Remainder: (7+1=8). Answer: 157 8/9." 
+    },
+    
+    "t_frac_add": { "title": "Adding Fractions", "text": "For a/b + c/d: Multiply diagonally and add for the numerator (ad + bc). Multiply denominators for the bottom (bd)." },
+    "t_perc_frac": { "title": "Percentages to Fractions", "text": "Memorize fraction families. 1/8 = 12.5%, 1/16 = 6.25%, 1/40 = 2.5%. Use these to convert percentages into fractions quickly." },
     "t_gcd_lcm": { "title": "GCD and LCM Property", "text": "The product of the GCD and the LCM of two numbers is exactly equal to the product of the two numbers themselves. GCD(A,B) * LCM(A,B) = A * B." },
-    "t_roman_num": { "title": "Roman Numerals", "text": "M=1000, D=500, C=100, L=50, X=10, V=5, I=1. Read left to right. If a smaller value is before a larger value, subtract it (e.g., XL = 40, IV = 4)." },
+    "t_roman_num": { "title": "Roman Numerals", "text": "M=1000, D=500, C=100, L=50, X=10, V=5, I=1. If a smaller value is before a larger value, subtract it (e.g., XL = 40)." },
     
     // ==========================================
-    // 2. AUTO-GENERATED & GENERAL MATH
+    // 2. SPECIFIC FUNDAMENTALS & RULES (AI GENERATED)
     // ==========================================
-    "t_arith_series": {
-        "title": "Sum of an Arithmetic Series",
-        "text": "[Auto-Generated by AI] Average the first and last terms, then multiply by the number of terms. Formula: n * (a1 + an) / 2."
+    "t_order_of_operations": {
+        "title": "Fundamentals: Order of Operations",
+        "text": "[Auto-Generated by AI] Follow PEMDAS. 1) Parentheses. 2) Exponents. 3) Multiplication and Division (left to right). 4) Addition and Subtraction (left to right)."
     },
-    "t_geom_series_inf": {
-        "title": "Sum of Infinite Geometric Series",
-        "text": "[Auto-Generated by AI] The sum is exactly the first term divided by (1 minus the ratio). Formula: S = a / (1 - r). E.g., 12 + 9 + 6.75... Ratio is 3/4. Sum = 12 / (1 - 3/4) = 48."
+    "t_unit_conversion": {
+        "title": "Fundamentals: Fluid Volume Conversions",
+        "text": "[Auto-Generated by AI] Memorize the 'Gallon Man': 1 Gallon = 4 Quarts = 8 Pints = 16 Cups = 128 Ounces."
     },
-    "t_cross_cancel": {
-        "title": "Cross-Cancellation of Fractions",
-        "text": "[Auto-Generated by AI] Never multiply straight across if you can avoid it. Look for common factors in the numerators and denominators across different fractions to cancel them out first."
+    "t_exponent_rules": {
+        "title": "Fundamentals: Exponent Rules",
+        "text": "[Auto-Generated by AI] When multiplying numbers with the same base, ADD the exponents. When dividing, SUBTRACT the exponents. Example: 9^6 * 9^-4 / 9^-2 = 9^(6 + -4 - -2) = 9^(2 + 2) = 9^4."
     },
-    "t_distributive": {
-        "title": "The Distributive Property",
-        "text": "[Auto-Generated by AI] Break one of the numbers into easier parts. E.g., 549 * 62 is the same as 549 * (60 + 2). Calculate the parts and add them together."
+    "t_negative_zero_exponents": {
+        "title": "Fundamentals: Negative & Zero Exponents",
+        "text": "[Auto-Generated by AI] Any non-zero number to the power of 0 is exactly 1. A negative exponent means to take the reciprocal: x^-n = 1 / x^n. E.g., 4^-2 = 1 / 4^2 = 1/16."
     },
-    "t_shared_factor": {
-        "title": "Factoring Out a Shared Multiple",
-        "text": "[Auto-Generated by AI] If adding or subtracting two products, look for a common factor or a way to manipulate them. E.g., 14*25 + 12.5*28. Double 12.5 and halve 28 to get 25*14. Now you have 14*25 + 14*25 = 700."
+    "t_absolute_value": {
+        "title": "Fundamentals: Absolute Value",
+        "text": "[Auto-Generated by AI] Work from the inside out. Absolute value |x| makes negative numbers positive, but leaves positive numbers alone. Never distribute a negative sign into an absolute value bracket."
     },
-    "t_diff_cubes": {
-        "title": "Difference of Cubes",
-        "text": "[Auto-Generated by AI] Recognize the algebraic expansion: (a - b)(a^2 + ab + b^2) is exactly equal to a^3 - b^3."
+    "t_linear_equation": {
+        "title": "Fundamentals: Solving Linear Equations",
+        "text": "[Auto-Generated by AI] Group the variables (x) on one side of the equals sign and the constants (numbers) on the other. E.g., 5x + 7 = 6x - 2 -> subtract 5x from both sides -> 7 = x - 2 -> add 2 -> x = 9."
     },
-    "t_perfect_sq_trinomial": {
-        "title": "Perfect Square Trinomial",
-        "text": "[Auto-Generated by AI] Recognize the algebraic expansion: a^2 - 2ab + b^2 is exactly equal to (a - b)^2. Plug in the numbers and square the difference."
+    "t_linear_inequality": {
+        "title": "Fundamentals: Solving Inequalities",
+        "text": "[Auto-Generated by AI] Solve it exactly like a normal linear equation (isolate x). The ONLY difference: if you ever multiply or divide both sides by a negative number, you MUST flip the inequality sign."
     },
-    "t_diff_sq_reverse": {
-        "title": "Reverse Difference of Squares",
-        "text": "[Auto-Generated by AI] If multiplying two numbers that are exactly 2 apart, use (x-1)(x+1) = x^2 - 1. E.g., 13 * 15 = 14^2 - 1 = 196 - 1 = 195. (Wait, if the question is 13*15+1, the -1 and +1 cancel out, leaving just 14^2 = 196!)."
+    "t_set_intersection": {
+        "title": "Fundamentals: Set Intersection",
+        "text": "[Auto-Generated by AI] The 'intersection' of two sets means counting only the elements that exist in BOTH sets simultaneously. Look at the two lists and count the matches."
     },
-    "t_magic_14443": {
-        "title": "The Magic Number 14443",
-        "text": "[Auto-Generated by AI] Memorize this UIL specific shortcut: 14443 * 7 = 101101. If a test asks for 14443 * 15, break it into (14443 * 14) + 14443. (101101 * 2) + 14443 = 216645."
+    "t_lcm_gcd_calc": {
+        "title": "Fundamentals: Calculating LCM",
+        "text": "[Auto-Generated by AI] To find the Least Common Multiple, break both numbers into prime factors. Multiply the highest power of each prime that appears in either factorization."
     },
-    "t_proportions": {
-        "title": "Percentage Proportions",
-        "text": "[Auto-Generated by AI] For 'A% of B is C% of x', ignore the % signs. Set up the equation A * B = C * x and simplify. E.g., 38*42 = 76*x. 38 goes into 76 twice, so 42 = 2x, x = 21."
+    "t_trig_unit_circle": {
+        "title": "Fundamentals: The Unit Circle",
+        "text": "[Auto-Generated by AI] Commit the first quadrant of the unit circle to memory. sin(pi/6)=1/2. sin(pi/4)=sqrt(2)/2. sin(pi/3)=sqrt(3)/2. Tangent is simply sine divided by cosine."
     },
-    "t_consecutive_mult": {
-        "title": "Multiplying Consecutive Numbers",
-        "text": "[Auto-Generated by AI] For n * (n+1), just square the smaller number and add itself to it: n^2 + n. E.g., 32 * 33 = 32^2 + 32 = 1024 + 32 = 1056."
+    "t_trig_reference_angles": {
+        "title": "Fundamentals: Trig Reference Angles",
+        "text": "[Auto-Generated by AI] If an angle is larger than 2pi, subtract full circles (2pi) until it fits on the standard unit circle. E.g., 13pi/6 is (12pi/6 + pi/6). The 12pi/6 is one full circle, leaving just pi/6."
     },
-    "t_calc_power_rule": {
-        "title": "Calculus: Power Rule for Derivatives",
-        "text": "[Auto-Generated by AI] To find the derivative f'(x) of cx^n, multiply the coefficient by the exponent, and drop the exponent by 1. f'(x) = (c*n)x^(n-1)."
+    "t_inverse_trig": {
+        "title": "Fundamentals: Inverse Trig Functions",
+        "text": "[Auto-Generated by AI] arcsin(x) or arccos(x) asks: 'What angle gives me this ratio?' Draw a right triangle to find the missing side. E.g., sin(arccos .6). Cosine is adj/hyp (6/10 -> 3/5). The missing opposite side is 4 (3-4-5 triangle). Sine is opp/hyp -> 4/5 or 0.8."
     },
-    "t_calc_definite_integral": {
-        "title": "Calculus: Definite Integrals",
-        "text": "[Auto-Generated by AI] Reverse the power rule to find the antiderivative F(x): raise the power by 1 and divide by the new power. Then evaluate F(upper bound) - F(lower bound)."
+    "t_log_properties": {
+        "title": "Fundamentals: Logarithm Properties",
+        "text": "[Auto-Generated by AI] The natural log (ln) and 'e' cancel each other out. ln(e^x) = x. Also, log_b(b^x) = x."
     },
-    "t_limit_ex": {
-        "title": "Calculus: Limits of e^x",
-        "text": "[Auto-Generated by AI] Memorize this standard limit: lim x->0 (e^x - 1)/x is always exactly 1."
+    "t_alt_sum_squares": {
+        "title": "Fundamentals: Alternating Sum of Squares",
+        "text": "[Auto-Generated by AI] For a series like 1^2 - 2^2 + 3^2 - 4^2... ending on an EVEN negative number -n^2, the formula is simply: - [n(n+1) / 2]."
     },
+    "t_sum_of_cubes": {
+        "title": "Fundamentals: Sum of Cubes",
+        "text": "[Auto-Generated by AI] The sum of the first n cubes (1^3 + 2^3 + ... n^3) is exactly equal to the SQUARE of the sum of the first n integers. Formula: [n(n+1)/2]^2."
+    },
+    "t_inverse_function_point": {
+        "title": "Fundamentals: Inverse Functions at a Point",
+        "text": "[Auto-Generated by AI] Don't solve for the generic f^-1(x). Set the original function equal to the target value and just solve for x. E.g., if f(x)=4x/5 and you want f^-1(2), solve 4x/5 = 2 -> 4x = 10 -> x = 2.5."
+    },
+    "t_nested_logs": {
+        "title": "Fundamentals: Nested Logarithms",
+        "text": "[Auto-Generated by AI] Work from the inside out. For log_2(log_2(log_2(256))), first solve log_2(256) which is 8 (since 2^8=256). Then solve log_2(8) which is 3. Finally, solve log_2(3)... wait, log_2(8)=3, but 256 is 2^8. The trick is evaluating one step at a time."
+    },
+    // AND THE OTHERS FROM LAST TIME
+    "t_arith_series": { "title": "Sum of an Arithmetic Series", "text": "[Auto-Generated by AI] Average the first and last terms, then multiply by the number of terms. Formula: n * (a1 + an) / 2." },
+    "t_geom_series_inf": { "title": "Sum of Infinite Geometric Series", "text": "[Auto-Generated by AI] The sum is exactly the first term divided by (1 minus the ratio). Formula: S = a / (1 - r)." },
+    "t_cross_cancel": { "title": "Cross-Cancellation of Fractions", "text": "[Auto-Generated by AI] Never multiply straight across if you can avoid it. Look for common factors in the numerators and denominators to cancel out first." },
+    "t_distributive": { "title": "The Distributive Property", "text": "[Auto-Generated by AI] Break one of the numbers into easier parts. E.g., 549 * 62 is the same as 549 * (60 + 2)." },
+    "t_shared_factor": { "title": "Factoring Out a Shared Multiple", "text": "[Auto-Generated by AI] If adding two products, look for a common factor. E.g., 14*25 + 12.5*28. Double 12.5 and halve 28 to get 25*14. Now you have 14*25 + 14*25 = 700." },
+    "t_perfect_sq_trinomial": { "title": "Perfect Square Trinomial", "text": "[Auto-Generated by AI] Recognize the algebraic expansion: a^2 - 2ab + b^2 is exactly equal to (a - b)^2." },
+    "t_diff_sq_reverse": { "title": "Reverse Difference of Squares", "text": "[Auto-Generated by AI] If multiplying two numbers that are exactly 2 apart, use (x-1)(x+1) = x^2 - 1. E.g., 13 * 15 = 14^2 - 1 = 196 - 1 = 195." },
+    "t_magic_14443": { "title": "The Magic Number 14443", "text": "[Auto-Generated by AI] Memorize this shortcut: 14443 * 7 = 101101. E.g., 14443 * 15 = (14443 * 14) + 14443 = (101101 * 2) + 14443 = 216645." },
+    "t_proportions": { "title": "Percentage Proportions", "text": "[Auto-Generated by AI] For 'A% of B is C% of x', ignore the % signs. Set up the equation A * B = C * x and simplify." },
+    "t_consecutive_mult": { "title": "Multiplying Consecutive Numbers", "text": "[Auto-Generated by AI] For n * (n+1), just square the smaller number and add itself to it: n^2 + n." },
+    "t_calc_power_rule": { "title": "Calculus: Power Rule", "text": "[Auto-Generated by AI] To find the derivative f'(x) of cx^n, multiply the coefficient by the exponent, and drop the exponent by 1." },
+    "t_calc_definite_integral": { "title": "Calculus: Definite Integrals", "text": "[Auto-Generated by AI] Reverse the power rule to find the antiderivative F(x): raise the power by 1 and divide by the new power. Then evaluate F(upper bound) - F(lower bound)." },
+    "t_limit_ex": { "title": "Calculus: Limits of e^x", "text": "[Auto-Generated by AI] Memorize this standard limit: lim x->0 (e^x - 1)/x is always exactly 1." },
+    "t_rational_asymptotes": { "title": "Calculus/Pre-Cal: Asymptotes", "text": "[Auto-Generated by AI] Vertical asymptotes happen when the denominator is zero. Oblique/Slant asymptotes happen when the numerator's degree is exactly one higher than the denominator's." },
 
     // ==========================================
-    // 3. RAW MATH (NO TRICKS)
+    // 3. TRUE BASIC ARITHMETIC (NO TRICKS)
     // ==========================================
     "t_raw_math": {
-        "title": "Fundamentals & Raw Math",
-        "text": "There is no specific 'shortcut' for this. Rely on raw arithmetic calculation, order of operations, or standard algebra to get to the answer as quickly as possible."
+        "title": "Basic Arithmetic",
+        "text": "There is no trick for this one! It is a pure arithmetic calculation. Do the mental math left-to-right as quickly as possible."
     }
 };
