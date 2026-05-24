@@ -29,25 +29,60 @@
     </div>
 
     <script>
-        const uilQuestions = [
-            { "q": "118 + 811 - 181 =", "a": "748" },
-            { "q": "40 * 125 =", "a": "5000" },
-            { "q": "17^2 =", "a": "289" },
-            { "q": "GCD of 24, 36, 48 is", "a": "12" }
-            // Add as many as you want here!
-        ];
-
+      const questionDatabase = {
+    "column1": [
+        { "q": "3/4 + 2/3 =", "a": "17/12" },
+        { "q": "25 * 215 =", "a": "5375" },
+        { "q": ".075 =", "a": "3/40" },
+        { "q": "972 - 279 =", "a": "693" },
+        { "q": "17 + 9 - 13 + 23 =", "a": "36" },
+        // ... (Include all 60 questions for Column 1)
+    ],
+    "column2": [
+        { "q": "6 pints is what percent of a gallon?", "a": "75" },
+        { "q": "1421 / 9 =", "a": "157 8/9" },
+        { "q": "LCM of 32 and 72 is", "a": "288" },
+        { "q": "13 * 15 + 1 =", "a": "196" },
+        { "q": "43 * 57 =", "a": "2451" },
+        // ... (Include all 60 questions for Column 2)
+    ],
+    "column3": [
+        { "q": "212 * 311 =", "a": "65932" },
+        { "q": "14443 * 29 =", "a": "418847" },
+        { "q": "31^2 - 33^2 + 35^2 - 37^2 =", "a": "-272" },
+        { "q": "102 * 109 =", "a": "11118" },
+        { "q": "33 * 32 =", "a": "1056" },
+        // ... (Include all 60 questions for Column 3)
+    ],
+    "column4": [
+        { "q": "sin(13pi/6) =", "a": "1/2" },
+        { "q": "lim x->0 (e^x - 1)/x =", "a": "1" },
+        { "q": "cos(arcsin .4) =", "a": ".4" },
+        { "q": "int 1 to 2 (x^3) dx =", "a": "15/4" },
+        { "q": "Surface area of sphere radius 4 (k*pi), k =", "a": "64" }
+        // ... (Include all 60 questions for Column 4)
+    ]
+};
         let mode = '';
         let index = 0;
 
-        function startMode(selectedMode) {
-            mode = selectedMode;
-            index = 0;
-            document.getElementById('menu').style.display = 'none';
-            document.getElementById('quiz').style.display = 'block';
-            loadQuestion();
-        }
+       let activeQuestions = [];
 
+function startMode(selectedMode, columnKey = 'column1') {
+    mode = selectedMode;
+    index = 0;
+    // Set the questions based on the column chosen
+    activeQuestions = questionDatabase[columnKey]; 
+    document.getElementById('menu').style.display = 'none';
+    document.getElementById('quiz').style.display = 'block';
+    loadQuestion();
+}
+
+function loadQuestion() {
+    const randIndex = Math.floor(Math.random() * activeQuestions.length);
+    document.getElementById('question').innerText = activeQuestions[randIndex].q;
+    // ... rest of logic
+}
         function loadQuestion() {
             // Randomly pick a question
             const randIndex = Math.floor(Math.random() * uilQuestions.length);
