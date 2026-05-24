@@ -3,20 +3,31 @@
 <head>
     <title>UIL Number Sense Practice</title>
     <style>
-        body { background-color: #1a1a1a; color: #e0e0e0; font-family: 'Times New Roman', Times, serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        #app { background: #262626; padding: 40px; border-radius: 12px; border: 1px solid #4499aa; text-align: center; width: 80%; max-width: 600px; font-family: sans-serif; }
+        body { background-color: #1a1a1a; color: #e0e0e0; font-family: 'Times New Roman', Times, serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        #app { background: #262626; padding: 40px; border-radius: 12px; border: 1px solid #4499aa; text-align: center; width: 100%; max-width: 650px; font-family: sans-serif; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         
-        #metadata { color: #44bbaa; margin: 0 0 10px 0; font-family: sans-serif; font-size: 1rem; }
-        #question { font-family: 'Times New Roman', Times, serif; font-size: 2.2rem; letter-spacing: 1px; margin: 10px 0 20px 0; }
+        #metadata { color: #44bbaa; margin: 0 0 5px 0; font-size: 1rem; }
+        #format-hint { color: #aaaaaa; font-style: italic; margin: 0 0 15px 0; font-size: 0.9rem; }
+        #question { font-family: 'Times New Roman', Times, serif; font-size: 2.5rem; letter-spacing: 1px; margin: 10px 0 20px 0; }
         
-        button { background: #4499aa; color: white; border: none; padding: 12px 24px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; font-weight: bold; transition: 0.2s; }
+        button { background: #4499aa; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; font-weight: bold; transition: 0.2s; }
         button:hover { background: #357a88; transform: scale(1.05); }
-        input { padding: 12px; font-size: 1.5rem; width: 80%; margin-bottom: 15px; background: #333; border: 1px solid #555; color: white; border-radius: 4px; text-align: center; }
+        .btn-giveup { background: #ff6b6b; }
+        .btn-giveup:hover { background: #cc5555; }
         
-        select { background: #333; color: white; border: 1px solid #4499aa; padding: 10px; font-size: 1rem; border-radius: 4px; margin-bottom: 20px; width: 80%; cursor: pointer; }
+        input { padding: 12px; font-size: 1.5rem; width: 80%; margin-bottom: 15px; background: #333; border: 1px solid #555; color: white; border-radius: 4px; text-align: center; }
+        input:disabled { background: #222; color: #888; border-color: #444; }
+        
+        select { background: #333; color: white; border: 1px solid #4499aa; padding: 10px; font-size: 1rem; border-radius: 4px; margin-bottom: 15px; width: 90%; cursor: pointer; }
         
         .hud { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #44bbaa; border-bottom: 1px solid #444; padding-bottom: 10px; }
         #timer { color: #ff6b6b; display: none; }
+        
+        /* Trick Review Section */
+        #review-panel { display: none; background: #1f1f1f; border-left: 4px solid #44bbaa; padding: 15px; margin-top: 20px; text-align: left; border-radius: 0 4px 4px 0; }
+        #trick-title { margin: 0 0 10px 0; color: #44bbaa; }
+        #trick-text { margin: 0; line-height: 1.5; color: #ddd; }
+        #correct-answer-display { font-size: 1.2rem; color: #44bbaa; margin-bottom: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -29,21 +40,18 @@
                 <option value="official">Official UIL Tests Only</option>
                 <option value="heath">Bryan Heath (Auto-Generated) Only</option>
             </select>
-            <br>
 
-            <button onclick="startGlobalPractice()">Global Practice (Infinite)</button>
+            <button onclick="startGlobalPractice()">Global Practice</button>
             <button onclick="showColumns()">Knockout Drill</button>
             
             <div id="col-select" style="display:none; margin-top:20px; padding-top: 15px; border-top: 1px solid #444;">
                 <h3 style="margin-top: 0;">Select Difficulty & Column</h3>
-                
                 <select id="difficulty-filter">
                     <option value="easy">Easy (9s to 20s)</option>
                     <option value="medium" selected>Medium (6s to 15s)</option>
                     <option value="hard">Hard / State Qualifier (3s to 12s)</option>
                 </select>
                 <br>
-
                 <button onclick="startDrill('column1')">Col 1</button>
                 <button onclick="startDrill('column2')">Col 2</button>
                 <button onclick="startDrill('column3')">Col 3</button>
@@ -58,24 +66,41 @@
             </div>
             
             <h4 id="metadata"></h4>
+            <p id="format-hint"></p>
             <h2 id="question"></h2>
             
             <input type="text" id="answer" placeholder="Answer..." autofocus autocomplete="off" onkeydown="if(event.key==='Enter') checkAnswer()">
             <br>
-            <button onclick="checkAnswer()">Submit</button>
-            <button id="skip-btn" onclick="skip()">Skip</button>
-            <button onclick="exit()">Exit</button>
-            <p id="feedback"></p>
+            
+            <div id="action-buttons">
+                <button onclick="checkAnswer()">Submit</button>
+                <button id="skip-btn" onclick="skip()">Skip</button>
+                <button id="giveup-btn" class="btn-giveup" onclick="giveUp()">Give Up</button>
+            </div>
+            
+            <div id="next-buttons" style="display:none;">
+                <button onclick="loadQuestion()" style="width: 100%; padding: 15px; font-size: 1.2rem;">Next Question</button>
+            </div>
+
+            <p id="feedback" style="font-size: 1.2rem; font-weight: bold; margin-top: 15px;"></p>
+
+            <div id="review-panel">
+                <div id="correct-answer-display"></div>
+                <h3 id="trick-title"></h3>
+                <p id="trick-text"></p>
+            </div>
+
+            <br><button onclick="exit()" style="background: transparent; border: 1px solid #555; color: #888;">Exit to Menu</button>
         </div>
     </div>
 
-    <script src="database.js"></script> 
+    <script src="tricks.js"></script> 
+    <script src="col1.js"></script> 
     <script>
         let mode = '', activeQuestions = [], currentQ = null;
         let index = 0, streak = 0, timeLeft = 9, timerInterval;
         let currentDrillTime = 9; 
 
-        // The Timing Matrix
         const drillTimes = {
             'easy': { 'column1': 9, 'column2': 12, 'column3': 15, 'column4': 20 },
             'medium': { 'column1': 6, 'column2': 9, 'column3': 12, 'column4': 15 },
@@ -83,19 +108,10 @@
         };
 
         function formatMath(str) {
-            return str
-                .replace(/\^([0-9\-\.]+)/g, '<sup>$1</sup>')
-                .replace(/_([0-9a-zA-Z]+)/g, '<sub>$1</sub>')
-                .replace(/pi/g, 'π')
-                .replace(/sqrt\(/g, '√(')
-                .replace(/int /g, '∫ ')
-                .replace(/<=/g, '≤')
-                .replace(/>=/g, '≥');
+            return str.replace(/\^([0-9\-\.]+)/g, '<sup>$1</sup>').replace(/_([0-9a-zA-Z]+)/g, '<sub>$1</sub>').replace(/pi/g, 'π').replace(/sqrt\(/g, '√(').replace(/int /g, '∫ ').replace(/<=/g, '≤').replace(/>=/g, '≥');
         }
 
-        function showColumns() { 
-            document.getElementById('col-select').style.display = 'block'; 
-        }
+        function showColumns() { document.getElementById('col-select').style.display = 'block'; }
 
         function filterQuestions(questionArray) {
             const filter = document.getElementById('source-filter').value;
@@ -103,29 +119,37 @@
             return questionArray.filter(q => q.source === filter);
         }
 
-        function startGlobalPractice() {
-            let allQ = [...questionDatabase.column1, ...questionDatabase.column2, ...questionDatabase.column3, ...questionDatabase.column4];
-            activeQuestions = filterQuestions(allQ);
-            
-            if (activeQuestions.length === 0) { alert("No questions found for this filter!"); return; }
+        function getFullDatabase() {
+            // Checks if a column file is loaded before trying to spread it
+            let arr = [];
+            if (typeof column1 !== 'undefined') arr.push(...column1);
+            if (typeof column2 !== 'undefined') arr.push(...column2);
+            if (typeof column3 !== 'undefined') arr.push(...column3);
+            if (typeof column4 !== 'undefined') arr.push(...column4);
+            return arr;
+        }
 
+        function startGlobalPractice() {
+            activeQuestions = filterQuestions(getFullDatabase());
+            if (activeQuestions.length === 0) { alert("No questions found!"); return; }
             mode = 'practice';
             document.getElementById('timer').style.display = 'none';
-            document.getElementById('skip-btn').style.display = 'inline-block';
             start();
         }
 
         function startDrill(col) {
-            activeQuestions = filterQuestions(questionDatabase[col]);
+            let colData = [];
+            if (col === 'column1' && typeof column1 !== 'undefined') colData = column1;
+            // Add checks for other columns here later
             
-            if (activeQuestions.length === 0) { alert("No questions found for this filter in " + col + "!"); return; }
+            activeQuestions = filterQuestions(colData);
+            if (activeQuestions.length === 0) { alert("No questions found for " + col + "!"); return; }
 
             const diff = document.getElementById('difficulty-filter').value;
             currentDrillTime = drillTimes[diff][col];
 
             mode = 'drill';
             document.getElementById('timer').style.display = 'block';
-            document.getElementById('skip-btn').style.display = 'none';
             start();
         }
 
@@ -140,17 +164,35 @@
         function loadQuestion() {
             clearInterval(timerInterval);
             
+            // Reset UI for answering state
+            document.getElementById('review-panel').style.display = 'none';
+            document.getElementById('action-buttons').style.display = 'block';
+            document.getElementById('next-buttons').style.display = 'none';
+            const answerInput = document.getElementById('answer');
+            answerInput.disabled = false;
+            answerInput.value = "";
+            document.getElementById('feedback').innerText = "";
+            
             currentQ = activeQuestions[Math.floor(Math.random() * activeQuestions.length)];
             
             let sourceText = currentQ.source === 'official' ? 'Official' : 'Auto';
             document.getElementById('metadata').innerText = `Test ${currentQ.test} | Question #${currentQ.num} | [${sourceText}]`;
             
-            document.getElementById('question').innerHTML = formatMath(currentQ.q);
-            document.getElementById('answer').value = "";
-            document.getElementById('feedback').innerText = "";
+            // Handle optional format hints
+            const formatHint = document.getElementById('format-hint');
+            if (currentQ.format) {
+                formatHint.innerText = `(${currentQ.format})`;
+                formatHint.style.display = 'block';
+            } else {
+                formatHint.style.display = 'none';
+            }
             
-            // Short delay ensures the browser focuses the input reliably
-            setTimeout(() => document.getElementById('answer').focus(), 10);
+            document.getElementById('question').innerHTML = formatMath(currentQ.q);
+            
+            // Toggle Skip/Give Up buttons based on mode
+            document.getElementById('skip-btn').style.display = mode === 'practice' ? 'inline-block' : 'none';
+            
+            setTimeout(() => answerInput.focus(), 10);
 
             if (mode === 'drill') {
                 timeLeft = currentDrillTime; 
@@ -166,22 +208,65 @@
         function checkAnswer() {
             const userAns = document.getElementById('answer').value.trim();
             
-            if(userAns === currentQ.a) { 
+            // MULTIPLE ANSWER LOGIC: Checks if user input is inside the 'a' array
+            let isCorrect = false;
+            if (Array.isArray(currentQ.a)) {
+                isCorrect = currentQ.a.includes(userAns);
+            } else {
+                isCorrect = (userAns === currentQ.a); // Fallback if you forget to use an array
+            }
+            
+            if(isCorrect) { 
                 streak++;
                 updateHUD();
                 document.getElementById('feedback').style.color = "#44bbaa";
                 document.getElementById('feedback').innerText = "Correct!"; 
-                setTimeout(loadQuestion, 300);
+                triggerReviewState();
             } else { 
                 if (mode === 'drill') {
-                    knockout("Wrong Answer! The correct answer was: " + currentQ.a);
+                    knockout("Wrong Answer! The correct answer was: " + currentQ.a[0]);
                 } else {
                     streak = 0;
                     updateHUD();
                     document.getElementById('feedback').style.color = "#ff6b6b";
-                    document.getElementById('feedback').innerText = "Wrong! Answer: " + currentQ.a; 
+                    document.getElementById('feedback').innerText = "Incorrect. Try again or Give Up."; 
+                    document.getElementById('answer').value = "";
+                    document.getElementById('answer').focus();
                 }
             }
+        }
+
+        function giveUp() {
+            streak = 0;
+            updateHUD();
+            document.getElementById('feedback').style.color = "#ff6b6b";
+            document.getElementById('feedback').innerText = "Given up.";
+            triggerReviewState();
+        }
+
+        function triggerReviewState() {
+            clearInterval(timerInterval); // Stop the clock so they can read!
+            
+            document.getElementById('answer').disabled = true;
+            document.getElementById('action-buttons').style.display = 'none';
+            document.getElementById('next-buttons').style.display = 'block';
+            
+            // Display valid answers
+            let answerText = Array.isArray(currentQ.a) ? currentQ.a.join(" OR ") : currentQ.a;
+            document.getElementById('correct-answer-display').innerText = `Valid Answer(s): ${answerText}`;
+            
+            // Fetch trick from tricks.js
+            const trick = tricksDatabase[currentQ.trickId];
+            if (trick) {
+                document.getElementById('trick-title').innerText = "Trick: " + trick.title;
+                document.getElementById('trick-text').innerText = trick.text;
+                document.getElementById('review-panel').style.display = 'block';
+            }
+            
+            // Pressing Enter now goes to the next question
+            document.getElementById('answer').onkeydown = function(e) {
+                if(e.key === 'Enter') loadQuestion();
+            };
         }
 
         function knockout(reason) {
@@ -190,23 +275,17 @@
             exit();
         }
 
-        function updateHUD() { 
-            document.getElementById('streak-counter').innerText = "Streak: " + streak; 
-        }
+        function updateHUD() { document.getElementById('streak-counter').innerText = "Streak: " + streak; }
         
         function skip() { 
-            streak = 0; 
-            updateHUD(); 
-            loadQuestion(); 
+            streak = 0; updateHUD(); loadQuestion(); 
         }
         
-        // NEW EXIT FUNCTION: Smoothly resets the UI instead of reloading the page
         function exit() { 
             clearInterval(timerInterval); 
             document.getElementById('quiz').style.display = 'none';
             document.getElementById('menu').style.display = 'block';
-            document.getElementById('col-select').style.display = 'none'; // Closes the drill menu
-            document.getElementById('answer').value = ""; // Clear input
+            document.getElementById('col-select').style.display = 'none';
         }
     </script>
 </body>
