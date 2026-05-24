@@ -23,7 +23,6 @@
         .hud { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #44bbaa; border-bottom: 1px solid #444; padding-bottom: 10px; }
         #timer { color: #ff6b6b; display: none; }
         
-        /* Trick Review Section */
         #review-panel { display: none; background: #1f1f1f; border-left: 4px solid #44bbaa; padding: 15px; margin-top: 20px; text-align: left; border-radius: 0 4px 4px 0; }
         #trick-title { margin: 0 0 10px 0; color: #44bbaa; }
         #trick-text { margin: 0; line-height: 1.5; color: #ddd; }
@@ -96,6 +95,10 @@
 
     <script src="tricks.js"></script> 
     <script src="col1.js"></script> 
+    <script src="col2.js"></script> 
+    <script src="col3.js"></script> 
+    <script src="col4.js"></script> 
+
     <script>
         let mode = '', activeQuestions = [], currentQ = null;
         let index = 0, streak = 0, timeLeft = 9, timerInterval;
@@ -120,7 +123,6 @@
         }
 
         function getFullDatabase() {
-            // Checks if a column file is loaded before trying to spread it
             let arr = [];
             if (typeof column1 !== 'undefined') arr.push(...column1);
             if (typeof column2 !== 'undefined') arr.push(...column2);
@@ -140,7 +142,9 @@
         function startDrill(col) {
             let colData = [];
             if (col === 'column1' && typeof column1 !== 'undefined') colData = column1;
-            // Add checks for other columns here later
+            if (col === 'column2' && typeof column2 !== 'undefined') colData = column2;
+            if (col === 'column3' && typeof column3 !== 'undefined') colData = column3;
+            if (col === 'column4' && typeof column4 !== 'undefined') colData = column4;
             
             activeQuestions = filterQuestions(colData);
             if (activeQuestions.length === 0) { alert("No questions found for " + col + "!"); return; }
@@ -164,7 +168,6 @@
         function loadQuestion() {
             clearInterval(timerInterval);
             
-            // Reset UI for answering state
             document.getElementById('review-panel').style.display = 'none';
             document.getElementById('action-buttons').style.display = 'block';
             document.getElementById('next-buttons').style.display = 'none';
@@ -178,7 +181,6 @@
             let sourceText = currentQ.source === 'official' ? 'Official' : 'Auto';
             document.getElementById('metadata').innerText = `Test ${currentQ.test} | Question #${currentQ.num} | [${sourceText}]`;
             
-            // Handle optional format hints
             const formatHint = document.getElementById('format-hint');
             if (currentQ.format) {
                 formatHint.innerText = `(${currentQ.format})`;
@@ -189,9 +191,7 @@
             
             document.getElementById('question').innerHTML = formatMath(currentQ.q);
             
-            // Toggle Skip/Give Up buttons based on mode
             document.getElementById('skip-btn').style.display = mode === 'practice' ? 'inline-block' : 'none';
-            
             setTimeout(() => answerInput.focus(), 10);
 
             if (mode === 'drill') {
@@ -208,12 +208,11 @@
         function checkAnswer() {
             const userAns = document.getElementById('answer').value.trim();
             
-            // MULTIPLE ANSWER LOGIC: Checks if user input is inside the 'a' array
             let isCorrect = false;
             if (Array.isArray(currentQ.a)) {
                 isCorrect = currentQ.a.includes(userAns);
             } else {
-                isCorrect = (userAns === currentQ.a); // Fallback if you forget to use an array
+                isCorrect = (userAns === currentQ.a);
             }
             
             if(isCorrect) { 
@@ -245,17 +244,15 @@
         }
 
         function triggerReviewState() {
-            clearInterval(timerInterval); // Stop the clock so they can read!
+            clearInterval(timerInterval); 
             
             document.getElementById('answer').disabled = true;
             document.getElementById('action-buttons').style.display = 'none';
             document.getElementById('next-buttons').style.display = 'block';
             
-            // Display valid answers
             let answerText = Array.isArray(currentQ.a) ? currentQ.a.join(" OR ") : currentQ.a;
             document.getElementById('correct-answer-display').innerText = `Valid Answer(s): ${answerText}`;
             
-            // Fetch trick from tricks.js
             const trick = tricksDatabase[currentQ.trickId];
             if (trick) {
                 document.getElementById('trick-title').innerText = "Trick: " + trick.title;
@@ -263,7 +260,6 @@
                 document.getElementById('review-panel').style.display = 'block';
             }
             
-            // Pressing Enter now goes to the next question
             document.getElementById('answer').onkeydown = function(e) {
                 if(e.key === 'Enter') loadQuestion();
             };
@@ -276,11 +272,7 @@
         }
 
         function updateHUD() { document.getElementById('streak-counter').innerText = "Streak: " + streak; }
-        
-        function skip() { 
-            streak = 0; updateHUD(); loadQuestion(); 
-        }
-        
+        function skip() { streak = 0; updateHUD(); loadQuestion(); }
         function exit() { 
             clearInterval(timerInterval); 
             document.getElementById('quiz').style.display = 'none';
