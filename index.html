@@ -13,60 +13,55 @@
     <div id="app">
         <div id="menu">
             <h1>UIL Number Sense</h1>
-            <div id="mode-select">
-                <h3>Select Mode</h3>
-                <button onclick="setMode('practice')">Practice (Infinite)</button>
-                <button onclick="setMode('drill')">Timed Drill</button>
-            </div>
-            <div id="col-select" style="display:none;">
-                <h3>Select Column</h3>
-                <button onclick="start('column1')">Col 1</button>
-                <button onclick="start('column2')">Col 2</button>
-                <button onclick="start('column3')">Col 3</button>
-                <button onclick="start('column4')">Col 4</button>
+            <button onclick="startGlobalPractice()">Global Practice (Random All)</button>
+            <button onclick="showColumns()">Timed Drill (Choose Column)</button>
+            <div id="col-select" style="display:none; margin-top:20px;">
+                <button onclick="startDrill('column1')">Col 1</button>
+                <button onclick="startDrill('column2')">Col 2</button>
+                <button onclick="startDrill('column3')">Col 3</button>
+                <button onclick="startDrill('column4')">Col 4</button>
             </div>
         </div>
-
         <div id="quiz" style="display:none;">
-            <h2 id="timer">Time: --</h2>
+            <h2 id="timer">Time: 10:00</h2>
             <h2 id="question"></h2>
             <input type="text" id="answer" placeholder="Answer..." autofocus onkeydown="if(event.key==='Enter') checkAnswer()">
-            <br>
-            <button onclick="checkAnswer()">Submit</button>
+            <br><button onclick="checkAnswer()">Submit</button>
             <button onclick="skip()">Skip</button>
             <button onclick="exit()">Exit</button>
             <p id="feedback"></p>
         </div>
     </div>
-
     <script>
         const questionDatabase = {
-            "column1": [],
-            "column2": [],
-            "column3": [],
-            "column4": []
+            "column1": [{"q":"3/4 + 2/3 =","a":"17/12"},{"q":"25 * 215 =","a":"5375"},{"q":".075 =","a":"3/40"},{"q":"972 - 279 =","a":"693"},{"q":"17 + 9 - 13 + 23 =","a":"36"},{"q":"14 * 32 =","a":"448"},{"q":"27 * 25 =","a":"675"},{"q":"21 * 12 =","a":"252"}],
+            "column2": [{"q":"6 pints is what percent of a gallon?","a":"75"},{"q":"1421 / 9 =","a":"157 8/9"},{"q":"LCM of 32 and 72 is","a":"288"},{"q":"13 * 15 + 1 =","a":"196"},{"q":"43 * 57 =","a":"2451"},{"q":"If 37^2 - 31^2 = 2y then y =","a":"204"}],
+            "column3": [{"q":"212 * 311 =","a":"65932"},{"q":"14443 * 29 =","a":"418847"},{"q":"31^2 - 33^2 + 35^2 - 37^2 =","a":"-272"},{"q":"102 * 109 =","a":"11118"},{"q":"33 * 32 =","a":"1056"}],
+            "column4": [{"q":"sin(13pi/6) =","a":"1/2"},{"q":"lim x->0 (e^x - 1)/x =","a":"1"},{"q":"cos(arcsin .4) =","a":".4"},{"q":"int 1 to 2 (x^3) dx =","a":"15/4"},{"q":"Surface area of sphere radius 4 (k*pi), k =","a":"64"}]
         };
-
-        let mode = '', activeQuestions = [], index = 0, timeLeft = 600; // 10 minutes default
-        let timerInterval;
-
-        function setMode(m) { mode = m; document.getElementById('mode-select').style.display = 'none'; document.getElementById('col-select').style.display = 'block'; }
-
-        function start(col) {
+        let mode = '', activeQuestions = [], index = 0, timeLeft = 600, timerInterval;
+        function showColumns() { document.getElementById('col-select').style.display = 'block'; }
+        function startGlobalPractice() {
+            activeQuestions = [...questionDatabase.column1, ...questionDatabase.column2, ...questionDatabase.column3, ...questionDatabase.column4];
+            mode = 'practice';
+            start();
+        }
+        function startDrill(col) {
             activeQuestions = questionDatabase[col];
+            mode = 'drill';
+            timeLeft = 600;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = "Time: " + Math.floor(timeLeft/60) + ":" + (timeLeft%60).toString().padStart(2, '0');
+                if(timeLeft <= 0) { clearInterval(timerInterval); alert("Time's up!"); exit(); }
+            }, 1000);
+            start();
+        }
+        function start() {
             document.getElementById('menu').style.display = 'none';
             document.getElementById('quiz').style.display = 'block';
-            if (mode === 'drill') {
-                timeLeft = 600;
-                timerInterval = setInterval(() => {
-                    timeLeft--;
-                    document.getElementById('timer').innerText = "Time: " + Math.floor(timeLeft/60) + ":" + (timeLeft%60).toString().padStart(2, '0');
-                    if(timeLeft <= 0) { clearInterval(timerInterval); alert("Time's up!"); exit(); }
-                }, 1000);
-            }
             loadQuestion();
         }
-
         function loadQuestion() {
             const q = activeQuestions[Math.floor(Math.random() * activeQuestions.length)];
             document.getElementById('question').innerText = q.q;
@@ -74,17 +69,14 @@
             document.getElementById('feedback').innerText = "";
             document.getElementById('answer').focus();
         }
-
         function checkAnswer() {
             const userAns = document.getElementById('answer').value;
             const currentQ = activeQuestions.find(i => i.q === document.getElementById('question').innerText);
-            if(userAns === currentQ.a) { document.getElementById('feedback').innerText = "Correct!"; setTimeout(next, 500); }
+            if(userAns === currentQ.a) { document.getElementById('feedback').innerText = "Correct!"; setTimeout(loadQuestion, 500); }
             else { document.getElementById('feedback').innerText = "Wrong! Answer: " + currentQ.a; }
         }
-
-        function next() { index++; loadQuestion(); }
         function skip() { loadQuestion(); }
-        function exit() { clearInterval(timerInterval); document.getElementById('menu').style.display = 'block'; document.getElementById('mode-select').style.display = 'block'; document.getElementById('col-select').style.display = 'none'; document.getElementById('quiz').style.display = 'none'; }
+        function exit() { clearInterval(timerInterval); location.reload(); }
     </script>
 </body>
 </html>
