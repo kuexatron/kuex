@@ -3,25 +3,27 @@
 <head>
     <title>UIL Number Sense Practice</title>
     <style>
-        /* Dark Theme & Centering */
         body { background-color: #1a1a1a; color: #e0e0e0; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        #app { background: #262626; padding: 40px; border-radius: 12px; border: 1px solid #4499aa; text-align: center; width: 80%; max-width: 500px; }
+        #app { background: #262626; padding: 40px; border-radius: 12px; border: 1px solid #4499aa; text-align: center; width: 80%; max-width: 600px; }
         button { background: #4499aa; color: white; border: none; padding: 12px 24px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; }
-        input { padding: 10px; font-size: 1.2rem; width: 80%; margin-bottom: 10px; background: #333; border: 1px solid #555; color: white; }
+        input { padding: 12px; font-size: 1.2rem; width: 80%; margin-bottom: 15px; background: #333; border: 1px solid #555; color: white; border-radius: 4px; }
     </style>
 </head>
 <body>
     <div id="app">
-        <div id="start-screen">
-            <h1>UIL Number Sense Practice</h1>
-            <button onclick="startQuiz()">Start Drill</button>
+        <div id="menu">
+            <h1>UIL Number Sense</h1>
+            <button onclick="startMode('practice')">Practice (Infinite)</button>
+            <button onclick="startMode('drill')">Timed Drill (20 Qs)</button>
         </div>
-        <div id="quiz-screen" style="display:none;">
+
+        <div id="quiz" style="display:none;">
             <h2 id="question"></h2>
-            <input type="text" id="answer" placeholder="Answer..." autofocus>
+            <input type="text" id="answer" placeholder="Answer..." autofocus onkeydown="if(event.key==='Enter') checkAnswer()">
             <br>
             <button onclick="checkAnswer()">Submit</button>
-            <button onclick="skipQuestion()">Skip</button>
+            <button onclick="skip()">Skip</button>
+            <button onclick="exit()">Exit</button>
             <p id="feedback"></p>
         </div>
     </div>
@@ -32,21 +34,24 @@
             { "q": "40 * 125 =", "a": "5000" },
             { "q": "17^2 =", "a": "289" },
             { "q": "GCD of 24, 36, 48 is", "a": "12" }
+            // Add as many as you want here!
         ];
 
-        let currentQuestions = [];
+        let mode = '';
         let index = 0;
 
-        function startQuiz() {
-            // Randomize: Sorts the array into a new random order every time
-            currentQuestions = [...uilQuestions].sort(() => Math.random() - 0.5);
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('quiz-screen').style.display = 'block';
+        function startMode(selectedMode) {
+            mode = selectedMode;
+            index = 0;
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
             loadQuestion();
         }
 
         function loadQuestion() {
-            document.getElementById('question').innerText = currentQuestions[index].q;
+            // Randomly pick a question
+            const randIndex = Math.floor(Math.random() * uilQuestions.length);
+            document.getElementById('question').innerText = uilQuestions[randIndex].q;
             document.getElementById('answer').value = "";
             document.getElementById('feedback').innerText = "";
             document.getElementById('answer').focus();
@@ -54,22 +59,30 @@
 
         function checkAnswer() {
             const userAns = document.getElementById('answer').value;
-            if(userAns === currentQuestions[index].a) {
+            const currentQ = uilQuestions.find(i => i.q === document.getElementById('question').innerText);
+            
+            if(userAns === currentQ.a) {
                 document.getElementById('feedback').innerText = "Correct!";
-                setTimeout(next, 700);
+                setTimeout(next, 500);
             } else {
-                document.getElementById('feedback').innerText = "Wrong! Answer: " + currentQuestions[index].a;
+                document.getElementById('feedback').innerText = "Wrong! Answer: " + currentQ.a;
             }
         }
 
-        function skipQuestion() { next(); }
-
         function next() {
-            index++;
-            if(index < currentQuestions.length) loadQuestion();
-            else {
-                document.getElementById('quiz-screen').innerHTML = "<h1>Drill Complete!</h1><button onclick='location.reload()'>Restart</button>";
+            if (mode === 'drill' && index >= 19) {
+                alert("Drill Complete!");
+                exit();
+            } else {
+                index++;
+                loadQuestion();
             }
+        }
+
+        function skip() { loadQuestion(); }
+        function exit() {
+            document.getElementById('menu').style.display = 'block';
+            document.getElementById('quiz').style.display = 'none';
         }
     </script>
 </body>
