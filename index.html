@@ -13,11 +13,22 @@
     <div id="app">
         <div id="menu">
             <h1>UIL Number Sense</h1>
-            <button onclick="startMode('practice', 'column1')">Practice Column 1</button>
-            <button onclick="startMode('drill', 'column1')">Timed Drill (20 Qs)</button>
+            <div id="mode-select">
+                <h3>Select Mode</h3>
+                <button onclick="setMode('practice')">Practice (Infinite)</button>
+                <button onclick="setMode('drill')">Timed Drill</button>
+            </div>
+            <div id="col-select" style="display:none;">
+                <h3>Select Column</h3>
+                <button onclick="start('column1')">Col 1</button>
+                <button onclick="start('column2')">Col 2</button>
+                <button onclick="start('column3')">Col 3</button>
+                <button onclick="start('column4')">Col 4</button>
+            </div>
         </div>
 
         <div id="quiz" style="display:none;">
+            <h2 id="timer">Time: --</h2>
             <h2 id="question"></h2>
             <input type="text" id="answer" placeholder="Answer..." autofocus onkeydown="if(event.key==='Enter') checkAnswer()">
             <br>
@@ -30,32 +41,35 @@
 
     <script>
         const questionDatabase = {
-            "column1": [
-                { "q": "3/4 + 2/3 =", "a": "17/12" },
-                { "q": "25 * 215 =", "a": "5375" }
-                // Add all your Column 1 questions here
-            ],
+            "column1": [],
             "column2": [],
             "column3": [],
             "column4": []
         };
 
-        let mode = '';
-        let index = 0;
-        let activeQuestions = [];
+        let mode = '', activeQuestions = [], index = 0, timeLeft = 600; // 10 minutes default
+        let timerInterval;
 
-        function startMode(selectedMode, columnKey) {
-            mode = selectedMode;
-            index = 0;
-            activeQuestions = questionDatabase[columnKey];
+        function setMode(m) { mode = m; document.getElementById('mode-select').style.display = 'none'; document.getElementById('col-select').style.display = 'block'; }
+
+        function start(col) {
+            activeQuestions = questionDatabase[col];
             document.getElementById('menu').style.display = 'none';
             document.getElementById('quiz').style.display = 'block';
+            if (mode === 'drill') {
+                timeLeft = 600;
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    document.getElementById('timer').innerText = "Time: " + Math.floor(timeLeft/60) + ":" + (timeLeft%60).toString().padStart(2, '0');
+                    if(timeLeft <= 0) { clearInterval(timerInterval); alert("Time's up!"); exit(); }
+                }, 1000);
+            }
             loadQuestion();
         }
 
         function loadQuestion() {
-            const randIndex = Math.floor(Math.random() * activeQuestions.length);
-            document.getElementById('question').innerText = activeQuestions[randIndex].q;
+            const q = activeQuestions[Math.floor(Math.random() * activeQuestions.length)];
+            document.getElementById('question').innerText = q.q;
             document.getElementById('answer').value = "";
             document.getElementById('feedback').innerText = "";
             document.getElementById('answer').focus();
@@ -64,30 +78,13 @@
         function checkAnswer() {
             const userAns = document.getElementById('answer').value;
             const currentQ = activeQuestions.find(i => i.q === document.getElementById('question').innerText);
-            
-            if(userAns === currentQ.a) {
-                document.getElementById('feedback').innerText = "Correct!";
-                setTimeout(next, 500);
-            } else {
-                document.getElementById('feedback').innerText = "Wrong! Answer: " + currentQ.a;
-            }
+            if(userAns === currentQ.a) { document.getElementById('feedback').innerText = "Correct!"; setTimeout(next, 500); }
+            else { document.getElementById('feedback').innerText = "Wrong! Answer: " + currentQ.a; }
         }
 
-        function next() {
-            if (mode === 'drill' && index >= 19) {
-                alert("Drill Complete!");
-                exit();
-            } else {
-                index++;
-                loadQuestion();
-            }
-        }
-
+        function next() { index++; loadQuestion(); }
         function skip() { loadQuestion(); }
-        function exit() {
-            document.getElementById('menu').style.display = 'block';
-            document.getElementById('quiz').style.display = 'none';
-        }
+        function exit() { clearInterval(timerInterval); document.getElementById('menu').style.display = 'block'; document.getElementById('mode-select').style.display = 'block'; document.getElementById('col-select').style.display = 'none'; document.getElementById('quiz').style.display = 'none'; }
     </script>
 </body>
 </html>
