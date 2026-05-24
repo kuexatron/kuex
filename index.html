@@ -3,18 +3,28 @@
 <head>
     <title>UIL Number Sense Practice</title>
     <style>
-        body { background-color: #1a1a1a; color: #e0e0e0; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        #app { background: #262626; padding: 40px; border-radius: 12px; border: 1px solid #4499aa; text-align: center; width: 80%; max-width: 600px; }
-        button { background: #4499aa; color: white; border: none; padding: 12px 24px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; }
-        input { padding: 12px; font-size: 1.2rem; width: 80%; margin-bottom: 15px; background: #333; border: 1px solid #555; color: white; border-radius: 4px; }
+        /* Changed font to serif to mimic real UIL test papers */
+        body { background-color: #1a1a1a; color: #e0e0e0; font-family: 'Times New Roman', Times, serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        #app { background: #262626; padding: 40px; border-radius: 12px; border: 1px solid #4499aa; text-align: center; width: 80%; max-width: 600px; font-family: sans-serif; }
+        
+        /* Math display styling */
+        #question { font-family: 'Times New Roman', Times, serif; font-size: 2rem; letter-spacing: 1px; }
+        
+        button { background: #4499aa; color: white; border: none; padding: 12px 24px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; font-weight: bold; }
+        button:hover { background: #357a88; }
+        input { padding: 12px; font-size: 1.5rem; width: 80%; margin-bottom: 15px; background: #333; border: 1px solid #555; color: white; border-radius: 4px; text-align: center; }
+        
+        /* HUD elements */
+        .hud { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #44bbaa; }
+        #timer { color: #ff6b6b; display: none; } /* Red for the knockout timer */
     </style>
 </head>
 <body>
     <div id="app">
         <div id="menu">
             <h1>UIL Number Sense</h1>
-            <button onclick="startGlobalPractice()">Global Practice (Random All)</button>
-            <button onclick="showColumns()">Timed Drill (Choose Column)</button>
+            <button onclick="startGlobalPractice()">Global Practice (Infinite, No Timer)</button>
+            <button onclick="showColumns()">Knockout Drill (9s per question)</button>
             <div id="col-select" style="display:none; margin-top:20px;">
                 <button onclick="startDrill('column1')">Col 1</button>
                 <button onclick="startDrill('column2')">Col 2</button>
@@ -22,61 +32,142 @@
                 <button onclick="startDrill('column4')">Col 4</button>
             </div>
         </div>
+
         <div id="quiz" style="display:none;">
-            <h2 id="timer">Time: 10:00</h2>
+            <div class="hud">
+                <span id="streak-counter">Streak: 0</span>
+                <span id="timer">Time: 9</span>
+            </div>
+            
             <h2 id="question"></h2>
+            
             <input type="text" id="answer" placeholder="Answer..." autofocus onkeydown="if(event.key==='Enter') checkAnswer()">
-            <br><button onclick="checkAnswer()">Submit</button>
-            <button onclick="skip()">Skip</button>
+            <br>
+            <button onclick="checkAnswer()">Submit</button>
+            <button id="skip-btn" onclick="skip()">Skip</button>
             <button onclick="exit()">Exit</button>
             <p id="feedback"></p>
         </div>
     </div>
+
     <script>
-      const questionDatabase = {
+        // ==========================================
+        // PASTE YOUR FULL questionDatabase HERE
+        // ==========================================
+       const questionDatabase = {
             "column1": [{"q":"3/4 + 2/3 =","a":"17/12"},{"q":"25 * 215 =","a":"5375"},{"q":".075 =","a":"3/40"},{"q":"972 - 279 =","a":"693"},{"q":"17 + 9 - 13 + 23 =","a":"36"},{"q":"14 * 32 =","a":"448"},{"q":"27 * 25 =","a":"675"},{"q":"21 * 12 =","a":"252"},{"q":"6/13 * 26/15 * 5/12 =","a":"1/3"},{"q":"1 1/16% =","a":"17/1600"},{"q":"75 * .84 =","a":"63"},{"q":"2006 / 9 =","a":"222 8/9"},{"q":"3^0 + 2*5 + 4^-1 =","a":"11.25"},{"q":"2013 - 201 + 13 =","a":"1825"},{"q":"3143 / 5 =","a":"628.6"},{"q":"549 * 62 =","a":"34038"},{"q":"LCM(35,55)*GCD(35,55) =","a":"1925"},{"q":"15^2 =","a":"225"},{"q":"CDXLIV + MDLXIX =","a":"2013"},{"q":"987 - 654 * 321 =","a":"-209047"}],
             "column2": [{"q":"6 pints is what percent of a gallon?","a":"75"},{"q":"1421 / 9 =","a":"157 8/9"},{"q":"LCM of 32 and 72 is","a":"288"},{"q":"13 * 15 + 1 =","a":"196"},{"q":"43 * 57 =","a":"2451"},{"q":"If 37^2 - 31^2 = 2y then y =","a":"204"},{"q":"sqrt(40*160) =","a":"80"},{"q":"3 * 2! + 4 * 3! + 5 * 4! =","a":"150"},{"q":"14443 * 17 =","a":"245531"},{"q":"75 * 284 =","a":"21300"},{"q":"38% of 42 is 76% of","a":"21"},{"q":"Area of largest square in 6in diameter circle","a":"18"},{"q":"If x^3 + 30 = 3 then x =","a":"-3"},{"q":"43_8 - 21_8 =","a":"22"},{"q":"1 gallon = ? ounces","a":"128"},{"q":"sqrt(102100) =","a":"319.5"},{"q":"36^2 + 57^2 =","a":"4545"},{"q":"7/9 - 19/29 =","a":"32/261"},{"q":"Next term of 4, 7, 12, 19, 28, ?","a":"39"},{"q":"33 * 32 =","a":"1056"}],
             "column3": [{"q":"212 * 311 =","a":"65932"},{"q":"14443 * 29 =","a":"418847"},{"q":"31^2 - 33^2 + 35^2 - 37^2 =","a":"-272"},{"q":"102 * 109 =","a":"11118"},{"q":"33 * 32 =","a":"1056"},{"q":"14 * 25 + 12.5 * 28 =","a":"700"},{"q":"9^6 * 9^-4 / 9^-2 = 9^k, k =","a":"4"},{"q":"Area of 4x6 picture enlarged to 6x10 is multiplied by","a":"2.5"},{"q":"If 4x + 5 > 20 then x >","a":"3.75"},{"q":"If 5x + 7 = 6x - 2 then x =","a":"9"},{"q":"24 * 34 * 44 =","a":"35904"},{"q":"sqrt(1234) * 56 =","a":"1966.3"},{"q":"Set {m,e,n,t,a,l} intersect {m,a,t,h} has ? elements","a":"3"},{"q":"A ticket costs 5.75. 12 tickets cost $","a":"69"},{"q":"9 - 7 * (5+3) / 1 =","a":"-47"},{"q":"If x=-3, y=-2 then x^2 - 2xy + y^2 =","a":"1"},{"q":"The GCD of 78 and 114 is","a":"6"},{"q":"123 * 301 =","a":"37023"},{"q":"18% of 266 is","a":"47.88"},{"q":"62 * 68 =","a":"4216"}],
             "column4": [{"q":"sin(13pi/6) =","a":"1/2"},{"q":"lim x->0 (e^x - 1)/x =","a":"1"},{"q":"cos(arcsin .4) =","a":".4"},{"q":"int 1 to 2 (x^3) dx =","a":"15/4"},{"q":"Surface area of sphere radius 4 (k*pi), k =","a":"64"},{"q":"222_3 * 2_3 =","a":"1221"},{"q":"sin(arccos .6) =","a":".8"},{"q":"111 * 56 =","a":"6216"},{"q":"Surface area of sphere radius 4 = k*pi, k =","a":"64"},{"q":"5x^3 + 4x^2 + 3x - 2 divided by x+1 remainder is","a":"-6"},{"q":"Dot product u=(2,1), v=(4,3)","a":"11"},{"q":"1^3 + 2^3 + 3^3 + ... + 6^3 =","a":"441"},{"q":"111 * 7/27 =","a":"28 7/9"},{"q":"g(x)=3x+2, g^-1(-1) =","a":"-1"},{"q":"int 1 to 2 x^3 dx =","a":"15/4"},{"q":"f(x)=x+1/x has ? asymptotes","a":"2"},{"q":"f(x)=4x/5, f^-1(2) =","a":"2.5"},{"q":"2 * 3 * 5 * 7 * 11 =","a":"2310"},{"q":"Prob sum is 7 with pair of dice =","a":"1/6"},{"q":"log_2(log_2(log_2(256))) =","a":"1"}]
         };
-        let mode = '', activeQuestions = [], index = 0, timeLeft = 600, timerInterval;
+        // ==========================================
+
+        let mode = '', activeQuestions = [], currentQ = null;
+        let index = 0, streak = 0, timeLeft = 9, timerInterval;
+
+        // Automatically formats text into Math symbols without needing external libraries
+        function formatMath(str) {
+            return str
+                .replace(/\^([0-9\-\.]+)/g, '<sup>$1</sup>') // Exponents (e.g., ^2)
+                .replace(/_([0-9a-zA-Z]+)/g, '<sub>$1</sub>') // Subscripts (e.g., _3)
+                .replace(/pi/g, 'π')
+                .replace(/sqrt\(/g, '√(')
+                .replace(/int /g, '∫ ')
+                .replace(/<=/g, '≤')
+                .replace(/>=/g, '≥');
+        }
+
         function showColumns() { document.getElementById('col-select').style.display = 'block'; }
+
         function startGlobalPractice() {
             activeQuestions = [...questionDatabase.column1, ...questionDatabase.column2, ...questionDatabase.column3, ...questionDatabase.column4];
             mode = 'practice';
+            document.getElementById('timer').style.display = 'none'; // Hide timer
+            document.getElementById('skip-btn').style.display = 'inline-block'; // Allow skipping
             start();
         }
+
         function startDrill(col) {
             activeQuestions = questionDatabase[col];
             mode = 'drill';
-            timeLeft = 600;
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('timer').innerText = "Time: " + Math.floor(timeLeft/60) + ":" + (timeLeft%60).toString().padStart(2, '0');
-                if(timeLeft <= 0) { clearInterval(timerInterval); alert("Time's up!"); exit(); }
-            }, 1000);
+            document.getElementById('timer').style.display = 'block'; // Show timer
+            document.getElementById('skip-btn').style.display = 'none'; // No skipping in knockout!
             start();
         }
+
         function start() {
+            streak = 0;
+            updateHUD();
             document.getElementById('menu').style.display = 'none';
             document.getElementById('quiz').style.display = 'block';
             loadQuestion();
         }
+
         function loadQuestion() {
-            const q = activeQuestions[Math.floor(Math.random() * activeQuestions.length)];
-            document.getElementById('question').innerText = q.q;
+            clearInterval(timerInterval); // Stop previous timer
+            
+            currentQ = activeQuestions[Math.floor(Math.random() * activeQuestions.length)];
+            document.getElementById('question').innerHTML = formatMath(currentQ.q);
+            
             document.getElementById('answer').value = "";
             document.getElementById('feedback').innerText = "";
             document.getElementById('answer').focus();
+
+            // Knockout Timer Logic
+            if (mode === 'drill') {
+                timeLeft = 9; // Reset to 9 seconds for the new question
+                document.getElementById('timer').innerText = "Time: " + timeLeft;
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    document.getElementById('timer').innerText = "Time: " + timeLeft;
+                    if(timeLeft <= 0) { 
+                        knockout("Time's up!"); 
+                    }
+                }, 1000);
+            }
         }
+
         function checkAnswer() {
-            const userAns = document.getElementById('answer').value;
-            const currentQ = activeQuestions.find(i => i.q === document.getElementById('question').innerText);
-            if(userAns === currentQ.a) { document.getElementById('feedback').innerText = "Correct!"; setTimeout(loadQuestion, 500); }
-            else { document.getElementById('feedback').innerText = "Wrong! Answer: " + currentQ.a; }
+            const userAns = document.getElementById('answer').value.trim();
+            
+            if(userAns === currentQ.a) { 
+                streak++;
+                updateHUD();
+                document.getElementById('feedback').style.color = "#44bbaa";
+                document.getElementById('feedback').innerText = "Correct!"; 
+                setTimeout(loadQuestion, 300); // Load next fast
+            } else { 
+                if (mode === 'drill') {
+                    knockout("Wrong Answer! The correct answer was: " + currentQ.a);
+                } else {
+                    streak = 0; // Reset streak in practice, but keep going
+                    updateHUD();
+                    document.getElementById('feedback').style.color = "#ff6b6b";
+                    document.getElementById('feedback').innerText = "Wrong! Answer: " + currentQ.a; 
+                }
+            }
         }
-        function skip() { loadQuestion(); }
-        function exit() { clearInterval(timerInterval); location.reload(); }
+
+        function knockout(reason) {
+            clearInterval(timerInterval);
+            alert("KNOCKOUT!\n\n" + reason + "\n\nFinal Streak: " + streak);
+            exit();
+        }
+
+        function updateHUD() {
+            document.getElementById('streak-counter').innerText = "Streak: " + streak;
+        }
+
+        function skip() { 
+            streak = 0; // Skipping resets your streak in practice
+            updateHUD();
+            loadQuestion(); 
+        }
+
+        function exit() { 
+            clearInterval(timerInterval); 
+            location.reload(); // Refresh the page to go back to the main menu
+        }
     </script>
 </body>
 </html>
