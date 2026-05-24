@@ -73,8 +73,141 @@
     <script>
         let mode = '', activeQuestions = [], currentQ = null;
         let index = 0, streak = 0, timeLeft = 9, timerInterval;
-        let currentDrillTime = 9; // Stores the specific time for the chosen diff/col
+        let currentDrillTime = 9; 
 
         // The Timing Matrix
         const drillTimes = {
-            'easy': { 'column1': 9, 'column2': 12, 'column3': 15, 'column4':
+            'easy': { 'column1': 9, 'column2': 12, 'column3': 15, 'column4': 20 },
+            'medium': { 'column1': 6, 'column2': 9, 'column3': 12, 'column4': 15 },
+            'hard': { 'column1': 3, 'column2': 5, 'column3': 8, 'column4': 12 }
+        };
+
+        function formatMath(str) {
+            return str
+                .replace(/\^([0-9\-\.]+)/g, '<sup>$1</sup>')
+                .replace(/_([0-9a-zA-Z]+)/g, '<sub>$1</sub>')
+                .replace(/pi/g, 'π')
+                .replace(/sqrt\(/g, '√(')
+                .replace(/int /g, '∫ ')
+                .replace(/<=/g, '≤')
+                .replace(/>=/g, '≥');
+        }
+
+        function showColumns() { 
+            document.getElementById('col-select').style.display = 'block'; 
+        }
+
+        function filterQuestions(questionArray) {
+            const filter = document.getElementById('source-filter').value;
+            if (filter === 'all') return questionArray;
+            return questionArray.filter(q => q.source === filter);
+        }
+
+        function startGlobalPractice() {
+            let allQ = [...questionDatabase.column1, ...questionDatabase.column2, ...questionDatabase.column3, ...questionDatabase.column4];
+            activeQuestions = filterQuestions(allQ);
+            
+            if (activeQuestions.length === 0) { alert("No questions found for this filter!"); return; }
+
+            mode = 'practice';
+            document.getElementById('timer').style.display = 'none';
+            document.getElementById('skip-btn').style.display = 'inline-block';
+            start();
+        }
+
+        function startDrill(col) {
+            activeQuestions = filterQuestions(questionDatabase[col]);
+            
+            if (activeQuestions.length === 0) { alert("No questions found for this filter in " + col + "!"); return; }
+
+            const diff = document.getElementById('difficulty-filter').value;
+            currentDrillTime = drillTimes[diff][col];
+
+            mode = 'drill';
+            document.getElementById('timer').style.display = 'block';
+            document.getElementById('skip-btn').style.display = 'none';
+            start();
+        }
+
+        function start() {
+            streak = 0;
+            updateHUD();
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            clearInterval(timerInterval);
+            
+            currentQ = activeQuestions[Math.floor(Math.random() * activeQuestions.length)];
+            
+            let sourceText = currentQ.source === 'official' ? 'Official' : 'Auto';
+            document.getElementById('metadata').innerText = `Test ${currentQ.test} | Question #${currentQ.num} | [${sourceText}]`;
+            
+            document.getElementById('question').innerHTML = formatMath(currentQ.q);
+            document.getElementById('answer').value = "";
+            document.getElementById('feedback').innerText = "";
+            
+            // Short delay ensures the browser focuses the input reliably
+            setTimeout(() => document.getElementById('answer').focus(), 10);
+
+            if (mode === 'drill') {
+                timeLeft = currentDrillTime; 
+                document.getElementById('timer').innerText = "Time: " + timeLeft;
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    document.getElementById('timer').innerText = "Time: " + timeLeft;
+                    if(timeLeft <= 0) { knockout("Time's up!"); }
+                }, 1000);
+            }
+        }
+
+        function checkAnswer() {
+            const userAns = document.getElementById('answer').value.trim();
+            
+            if(userAns === currentQ.a) { 
+                streak++;
+                updateHUD();
+                document.getElementById('feedback').style.color = "#44bbaa";
+                document.getElementById('feedback').innerText = "Correct!"; 
+                setTimeout(loadQuestion, 300);
+            } else { 
+                if (mode === 'drill') {
+                    knockout("Wrong Answer! The correct answer was: " + currentQ.a);
+                } else {
+                    streak = 0;
+                    updateHUD();
+                    document.getElementById('feedback').style.color = "#ff6b6b";
+                    document.getElementById('feedback').innerText = "Wrong! Answer: " + currentQ.a; 
+                }
+            }
+        }
+
+        function knockout(reason) {
+            clearInterval(timerInterval);
+            alert("KNOCKOUT!\n\n" + reason + "\n\nFinal Streak: " + streak);
+            exit();
+        }
+
+        function updateHUD() { 
+            document.getElementById('streak-counter').innerText = "Streak: " + streak; 
+        }
+        
+        function skip() { 
+            streak = 0; 
+            updateHUD(); 
+            loadQuestion(); 
+        }
+        
+        // NEW EXIT FUNCTION: Smoothly resets the UI instead of reloading the page
+        function exit() { 
+            clearInterval(timerInterval); 
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('menu').style.display = 'block';
+            document.getElementById('col-select').style.display = 'none'; // Closes the drill menu
+            document.getElementById('answer').value = ""; // Clear input
+        }
+    </script>
+</body>
+</html>
