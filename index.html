@@ -5,20 +5,28 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-    <style>
-        body { background-color: #1a1a1a; color: #e0e0e0; font-family: 'Times New Roman', Times, serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        #app { background: #262626; padding: 40px; border-radius: 12px; border: 1px solid #4499aa; text-align: center; width: 100%; max-width: 650px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        
-        /* RESTORED DARK INPUT */
-        input { padding: 12px; font-size: 1.5rem; width: 80%; margin-bottom: 15px; background: #333 !important; border: 1px solid #555 !important; color: white !important; border-radius: 4px; text-align: center; }
-        
-        select { background: #333 !important; color: white !important; border: 1px solid #4499aa !important; padding: 10px; border-radius: 4px; margin-bottom: 15px; width: 80% !important; display: block; margin: 0 auto 15px; }
-        #question { font-size: 2.2rem; margin: 20px 0; min-height: 60px; color: #fff; }
-        button { background: #4499aa; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; font-weight: bold; }
-        .hud { display: flex; justify-content: space-between; font-size: 1.2rem; color: #44bbaa; margin-bottom: 20px; }
-        #review-panel { display: none; background: #1f1f1f; padding: 15px; margin-top: 20px; text-align: left; border-left: 4px solid #44bbaa; }
-        #specific-solution { margin-top: 15px; padding: 10px; background: #2a2a2a; border-left: 3px solid #ff6b6b; font-family: monospace; display: none; }
-    </style>
+ <style>
+    body { background-color: #1a1a1a; color: #e0e0e0; font-family: 'Times New Roman', Times, serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+    #app { background: #262626; padding: 40px; border-radius: 12px; border: 1px solid #4499aa; text-align: center; width: 100%; max-width: 650px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    
+    /* NEAT QUESTION DISPLAY */
+    #question { 
+        font-size: 1.8rem;      /* Slightly smaller for neatness */
+        margin: 25px 0; 
+        min-height: 60px; 
+        color: #fff; 
+        letter-spacing: 0.05em; /* Space between characters */
+        word-spacing: 0.2em;    /* Space between words/numbers */
+        line-height: 1.4;       /* Space between lines of math */
+    }
+
+    input { padding: 12px; font-size: 1.5rem; width: 80%; margin-bottom: 15px; background: #333 !important; border: 1px solid #555 !important; color: white !important; border-radius: 4px; text-align: center; }
+    select { background: #333 !important; color: white !important; border: 1px solid #4499aa !important; padding: 10px; border-radius: 4px; margin-bottom: 15px; width: 80% !important; display: block; margin: 0 auto 15px; }
+    button { background: #4499aa; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; font-weight: bold; }
+    .hud { display: flex; justify-content: space-between; font-size: 1.2rem; color: #44bbaa; margin-bottom: 20px; }
+    #review-panel { display: none; background: #1f1f1f; padding: 15px; margin-top: 20px; text-align: left; border-left: 4px solid #44bbaa; }
+    #specific-solution { margin-top: 15px; padding: 10px; background: #2a2a2a; border-left: 3px solid #ff6b6b; font-family: monospace; display: none; }
+</style>
 </head>
 <body>
     <div id="app">
