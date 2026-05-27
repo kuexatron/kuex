@@ -5,34 +5,22 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
- <style>
-    body { background-color: #1a1a1a; color: #e0e0e0; font-family: 'Times New Roman', Times, serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-    #app { background: #262626; padding: 40px; border-radius: 12px; border: 1px solid #4499aa; text-align: center; width: 100%; max-width: 650px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-    
-    /* NEAT QUESTION DISPLAY */
-    #question { 
-        font-size: 1.8rem;      /* Slightly smaller for neatness */
-        margin: 25px 0; 
-        min-height: 60px; 
-        color: #fff; 
-        letter-spacing: 0.05em; /* Space between characters */
-        word-spacing: 0.2em;    /* Space between words/numbers */
-        line-height: 1.4;       /* Space between lines of math */
-    }
-
-    input { padding: 12px; font-size: 1.5rem; width: 80%; margin-bottom: 15px; background: #333 !important; border: 1px solid #555 !important; color: white !important; border-radius: 4px; text-align: center; }
-    select { background: #333 !important; color: white !important; border: 1px solid #4499aa !important; padding: 10px; border-radius: 4px; margin-bottom: 15px; width: 80% !important; display: block; margin: 0 auto 15px; }
-    button { background: #4499aa; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; font-weight: bold; }
-    .hud { display: flex; justify-content: space-between; font-size: 1.2rem; color: #44bbaa; margin-bottom: 20px; }
-    #review-panel { display: none; background: #1f1f1f; padding: 15px; margin-top: 20px; text-align: left; border-left: 4px solid #44bbaa; }
-    #specific-solution { margin-top: 15px; padding: 10px; background: #2a2a2a; border-left: 3px solid #ff6b6b; font-family: monospace; display: none; }
-</style>
+    <style>
+        body { background-color: #1a1a1a; color: #e0e0e0; font-family: 'Times New Roman', Times, serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        #app { background: #262626; padding: 40px; border-radius: 12px; border: 1px solid #4499aa; text-align: center; width: 100%; max-width: 650px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        input { padding: 12px; font-size: 1.5rem; width: 80%; margin-bottom: 15px; background: #333 !important; border: 1px solid #555 !important; color: white !important; border-radius: 4px; text-align: center; }
+        select { background: #333 !important; color: white !important; border: 1px solid #4499aa !important; padding: 10px; border-radius: 4px; margin-bottom: 15px; width: 80% !important; display: block; margin: 0 auto 15px; }
+        #question { font-size: 1.8rem; margin: 25px 0; color: #fff; letter-spacing: 0.05em; word-spacing: 0.2em; line-height: 1.4; }
+        button { background: #4499aa; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; font-weight: bold; }
+        .hud { display: flex; justify-content: space-between; font-size: 1.2rem; color: #44bbaa; margin-bottom: 20px; }
+        #review-panel { display: none; background: #1f1f1f; padding: 15px; margin-top: 20px; text-align: left; border-left: 4px solid #44bbaa; }
+        #specific-solution { margin-top: 15px; padding: 10px; background: #2a2a2a; border-left: 3px solid #ff6b6b; font-family: monospace; display: none; }
+    </style>
 </head>
 <body>
     <div id="app">
         <div id="menu">
             <h1>UIL Number Sense</h1>
-            <select id="source-filter"><option value="all">All Sources</option><option value="official">Official Only</option></select>
             <button onclick="startGlobalPractice()">Global Practice</button>
             <button onclick="showColumns()">Knockout Drill</button>
             <div id="col-select" style="display:none; margin-top:20px;">
@@ -44,21 +32,24 @@
         <div id="quiz" style="display:none;">
             <div class="hud"><span id="streak-counter">Streak: 0</span><span id="timer"></span></div>
             <h4 id="metadata"></h4>
-            <h2 id="question"></h2>
-            <input type="text" id="answer" autocomplete="off" placeholder="Answer..." onkeydown="if(event.key==='Enter') checkAnswer()">
+            <p id="format-hint"></p> <h2 id="question"></h2>
+            <input type="text" id="answer" autocomplete="off" onkeydown="if(event.key==='Enter') checkAnswer()">
             <div id="action-buttons"><button onclick="checkAnswer()">Submit</button><button onclick="skip()">Skip</button><button onclick="giveUp()">Give Up</button></div>
             <div id="next-buttons" style="display:none;"><button onclick="loadQuestion()">Next Question</button></div>
             <div id="review-panel"><h3 id="trick-title"></h3><p id="trick-text"></p><p id="specific-solution"></p></div>
-            <button onclick="exit()">Exit</button>
         </div>
     </div>
-
     <script src="tricks.js"></script><script src="col1.js"></script><script src="col2.js"></script><script src="col3.js"></script><script src="col4.js"></script>
     <script>
         let mode = '', activeQuestions = [], questionPool = [], currentQ = null, streak = 0, timerInterval;
 
         function shuffleArray(array) { let arr = [...array]; for(let i=arr.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
         
+        function normalize(str) { 
+            // Strips spaces, replaces & with space, converts to lowercase for lenient matching
+            return str.toLowerCase().replace(/&/g, ' ').replace(/\s+/g, ''); 
+        }
+
         function startGlobalPractice() {
             activeQuestions = [...column1, ...column2, ...column3, ...column4];
             questionPool = shuffleArray(activeQuestions);
@@ -85,29 +76,32 @@
             document.getElementById('review-panel').style.display = 'none';
             document.getElementById('action-buttons').style.display = 'block';
             document.getElementById('next-buttons').style.display = 'none';
-            document.getElementById('answer').disabled = false;
             document.getElementById('answer').value = "";
+            document.getElementById('answer').disabled = false;
             document.getElementById('answer').focus();
             
             document.getElementById('metadata').innerText = `Test ${currentQ.test} | Question #${currentQ.num}`;
+            document.getElementById('format-hint').innerText = currentQ.format || "";
             document.getElementById('question').innerHTML = `\\(${currentQ.q}\\)`;
             renderMathInElement(document.getElementById('question'), {delimiters: [{left: "\\(", right: "\\)", display: false}]});
+            
+            if(mode === 'drill') {
+                let timeLeft = 9;
+                document.getElementById('timer').innerText = "Time: " + timeLeft;
+                timerInterval = setInterval(() => { timeLeft--; document.getElementById('timer').innerText = "Time: " + timeLeft; if(timeLeft <= 0) { alert("Time!"); location.reload(); } }, 1000);
+            }
         }
         
         function checkAnswer() {
-            const userAns = document.getElementById('answer').value.trim();
-            // Added defensive check to ensure currentQ exists
-            if (!currentQ) return;
+            const userAns = normalize(document.getElementById('answer').value);
+            const correctList = currentQ.a.map(a => normalize(a));
             
-            if (currentQ.a.includes(userAns)) {
+            if (correctList.includes(userAns)) {
                 streak++;
                 triggerReviewState();
-            } else if (mode === 'drill') {
-                alert("Wrong! The correct answer was: " + currentQ.a[0]);
-                location.reload();
             } else {
-                streak = 0;
-                alert("Incorrect!");
+                if(mode === 'drill') { alert("Wrong! " + currentQ.a[0]); location.reload(); }
+                else { streak = 0; alert("Incorrect!"); }
             }
             document.getElementById('streak-counter').innerText = "Streak: " + streak;
         }
@@ -117,7 +111,6 @@
             document.getElementById('action-buttons').style.display = 'none';
             document.getElementById('next-buttons').style.display = 'block';
             document.getElementById('review-panel').style.display = 'block';
-            
             const trick = tricksDatabase[currentQ.trickId];
             document.getElementById('trick-title').innerText = trick.title;
             document.getElementById('trick-text').innerText = trick.text;
@@ -126,10 +119,8 @@
                 document.getElementById('specific-solution').style.display = 'block';
             }
         }
-
         function skip() { streak = 0; loadQuestion(); }
         function giveUp() { streak = 0; triggerReviewState(); }
-        function exit() { location.reload(); }
         function showColumns() { document.getElementById('col-select').style.display = 'block'; }
     </script>
 </body>
