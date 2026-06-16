@@ -1,5 +1,4 @@
 const column3 = [
- // --- OFFICIAL TEST 1 (Questions 41-60) ---
     {"id":"001-41", "q":"31 \\times 4! + 36 \\times 3! =", "a":["960"], "test":"001", "num":"41", "source":"official", "trickId":"t_raw_math", "solution":"31*24 + 36*6 = 744 + 216 = 960"},
     {"id":"001-42", "q":"\\text{The cube root of } 250,047 \\text{ is}", "a":["63"], "test":"001", "num":"42", "source":"official", "trickId":"t_raw_math", "solution":"Ends in 7 -> root ends in 3. 250 is between 6^3 (216) and 7^3 (343). Result: 63"},
     {"id":"001-43", "q":"\\text{The area of the triangle whose base is 6 times its height } h \\text{ is } kh^{2} \\text{ and } k =", "a":["3"], "test":"001", "num":"43", "source":"official", "trickId":"t_raw_math", "solution":"Area = 1/2 * b * h = 1/2 * 6h * h = 3h^2. k = 3"},
@@ -20,8 +19,6 @@ const column3 = [
     {"id":"001-58", "q":"\\text{A triangle has integral sides of } x, 22, \\text{ and } 22. \\text{ The smallest value of } x \\text{ is}", "a":["1"], "test":"001", "num":"58", "source":"official", "trickId":"t_raw_math", "solution":"x must be > 0. Smallest integer is 1."},
     {"id":"001-59", "q":"\\frac{3}{8} \\text{ of a mile = \\_\\_\\_ feet}", "a":["1980"], "test":"001", "num":"59", "source":"official", "trickId":"t_unit_conversion", "solution":"3/8 * 5280 = 3 * 660 = 1980"},
     {"id":"001-60", "q":"16 \\times 18 \\times 20 =", "a":["5760"], "test":"001", "num":"60", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 5472-6048"},
-
-    // --- OFFICIAL TEST 2 (Questions 41-60) ---
     {"id":"002-41", "q":"212 \\times 311 =", "a":["65932"], "test":"002", "num":"41", "source":"official", "trickId":"t_mult_3x3", "solution":"65932"},
     {"id":"002-42", "q":"13 \\times 15 + 1 =", "a":["196"], "test":"002", "num":"42", "source":"official", "trickId":"t_diff_sq_reverse", "solution":"14^2 = 196"},
     {"id":"002-43", "q":"\\text{If the GCD of } x \\text{ and 20 is 5 and their LCM is 180, then } x =", "a":["45"], "test":"002", "num":"43", "source":"official", "trickId":"t_gcd_lcm", "solution":"GCD * LCM = A * B -> 5 * 180 = 20x -> x=45"},
@@ -42,8 +39,6 @@ const column3 = [
     {"id":"002-58", "q":"\\text{If } \\frac{3x}{5} \\text{ has a remainder of 4 and } \\frac{3y}{5} \\text{ has a remainder of 1 then } \\frac{xy}{5} \\text{ has a remainder of}", "a":["1"], "test":"002", "num":"58", "source":"official", "trickId":"t_raw_math", "solution":"3x = 4mod5 -> x = 3. 3y = 1mod5 -> y = 2. xy = 6 = 1mod5"},
     {"id":"002-59", "q":"12 + 9 + 6.75 + ... =", "a":["48"], "test":"002", "num":"59", "source":"official", "trickId":"t_geom_series_inf", "solution":"12 / (1 - 3/4) = 48"},
     {"id":"002-60", "q":"29 \\times 30 \\times 29 \\times 30 =", "a":["756900"], "test":"002", "num":"60", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 719055-794745. Exact: 756900"},
-
-    // --- OFFICIAL TEST 3 (Questions 41-60) ---
     {"id":"003-41", "q":"212 \\times 311 =", "a":["65932"], "test":"003", "num":"41", "source":"official", "trickId":"t_mult_3x3", "solution":"65932"},
     {"id":"003-42", "q":"\\frac{3}{14} = \\text{\\_\\_\\_}\\%", "a":["21 3/7"], "test":"003", "num":"42", "source":"official", "trickId":"t_perc_frac", "solution":"300 / 14 = 150 / 7 = 21 3/7%"},
     {"id":"003-43", "q":"14 \\times 25 + 12.5 \\times 28 =", "a":["700"], "test":"003", "num":"43", "source":"official", "trickId":"t_shared_factor", "solution":"350 + 350 = 700"},
@@ -63,5 +58,5 @@ const column3 = [
     {"id":"003-57", "q":"18\\% \\text{ of } 266 \\text{ is}", "a":["47.88"], "test":"003", "num":"57", "source":"official", "trickId":"t_perc_frac", "solution":"0.18 * 266 = 47.88"},
     {"id":"003-58", "q":"62 \\times 68 =", "a":["4216"], "test":"003", "num":"58", "source":"official", "trickId":"t_mult_units_10", "solution":"Units add to 10. 2*8=16. 6*7=42 -> 4216"},
     {"id":"003-59", "q":"\\text{Let } |2x+3| \\le 11. \\text{ The least value of } x \\text{ is}", "a":["-7"], "test":"003", "num":"59", "source":"official", "trickId":"t_absolute_value", "solution":"2x+3 >= -11 -> 2x >= -14 -> x >= -7"},
-    {"id":"003-60", "q":"\\text{The perimeter of } 90x^{2}+150y^{2}=13500 \\text{ is}", "a":["69"], "test":"003", "num":"60", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 66-72"},
+    {"id":"003-60", "q":"\\text{The perimeter of } 90x^{2}+150y^{2}=13500 \\text{ is}", "a":["69"], "test":"003", "num":"60", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 66-72"}
 ];
