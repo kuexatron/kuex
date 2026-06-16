@@ -9,13 +9,16 @@
         body { background-color: #1a1a1a; color: #e0e0e0; font-family: 'Times New Roman', Times, serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
         #app { background: #262626; padding: 40px; border-radius: 12px; border: 1px solid #4499aa; text-align: center; width: 100%; max-width: 650px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         input { padding: 12px; font-size: 1.5rem; width: 80%; margin-bottom: 15px; background: #333 !important; border: 1px solid #555 !important; color: white !important; border-radius: 4px; text-align: center; }
+        input:disabled { opacity: 0.7; cursor: not-allowed; }
         select { background: #333 !important; color: white !important; border: 1px solid #4499aa !important; padding: 10px; border-radius: 4px; margin-bottom: 15px; width: 80% !important; display: block; margin: 0 auto 15px; }
         #question { font-size: 1.8rem; margin: 25px 0; color: #fff; letter-spacing: 0.05em; word-spacing: 0.2em; line-height: 1.4; min-height: 60px; }
         #metadata { color: #44bbaa; margin: 0 0 5px 0; }
         button { background: #4499aa; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; font-weight: bold; }
+        button:focus { outline: 2px solid #fff; }
         #bookmark-btn { background: #d4a017; }
         #help-btn { background: #8e44ad; }
         .btn-giveup { background: #ff6b6b; }
+        .btn-skip { background: #555555; }
         .hud { display: flex; justify-content: space-between; font-size: 1.2rem; color: #44bbaa; margin-bottom: 20px; border-bottom: 1px solid #444; padding-bottom: 10px; }
         #timer { color: #ff6b6b; }
         #review-panel { display: none; background: #1f1f1f; padding: 15px; margin-top: 20px; text-align: left; border-left: 4px solid #44bbaa; }
@@ -51,6 +54,7 @@
 
             <div id="action-buttons">
                 <button onclick="checkAnswer()">Submit</button>
+                <button class="btn-skip" onclick="skipQuestion()">Skip</button>
                 <button id="help-btn" onclick="showTrick()">Help</button>
                 <button id="bookmark-btn" onclick="toggleBookmark()">Bookmark</button>
             </div>
@@ -59,7 +63,7 @@
                 <button class="btn-giveup" onclick="giveUp()">Give Up</button>
             </div>
             <div id="next-buttons" style="display:none;">
-                <button onclick="loadQuestion()" style="width:100%;">Next Question</button>
+                <button id="btn-next" onclick="loadQuestion()" style="width:100%;">Next Question</button>
             </div>
             <div id="review-panel">
                 <h3 id="trick-title"></h3>
@@ -140,7 +144,6 @@
             ansInput.focus();
             
             document.getElementById('feedback-msg').innerText = ""; 
-            
             document.getElementById('metadata').innerText = `Test ${currentQ.test} | Question #${currentQ.num}`;
             
             let formatText = currentQ.format ? ` <span style="font-size: 1.2rem; color: #aaaaaa;">(${currentQ.format})</span>` : "";
@@ -160,19 +163,40 @@
         }
         
         function checkAnswer() {
-            const userAns = normalize(document.getElementById('answer').value);
+            const userAnsRaw = document.getElementById('answer').value;
+            const userAns = normalize(userAnsRaw);
             const correctList = currentQ.a.map(a => normalize(a));
             let feedback = document.getElementById('feedback-msg');
             
-            if (correctList.includes(userAns)) {
+            let isCorrect = correctList.includes(userAns);
+
+            // UIL 5% Estimation Check Logic (Activates on every 10th question)
+            if (!isCorrect && parseInt(currentQ.num) % 10 === 0) {
+                let userNum = parseFloat(userAnsRaw.replace(/,/g, ''));
+                if (!isNaN(userNum) && currentQ.solution) {
+                    let match = currentQ.solution.match(/range:\s*(-?\d+\.?\d*)\s*(?:-|to)\s*(-?\d+\.?\d*)/i);
+                    if (match) {
+                        let lower = parseFloat(match[1]);
+                        let upper = parseFloat(match[2]);
+                        if (userNum >= lower && userNum <= upper) {
+                            isCorrect = true;
+                        }
+                    }
+                }
+            }
+            
+            if (isCorrect) {
                 streak++;
                 clearInterval(timerInterval);
-                document.getElementById('answer').style.color = "#44bbaa";
+                let ansInput = document.getElementById('answer');
+                ansInput.style.color = "#44bbaa";
+                ansInput.disabled = true; // Locks the input to prevent streak inflation
                 feedback.innerText = "Correct!";
                 feedback.style.color = "#44bbaa";
                 document.getElementById('action-buttons').style.display = 'none';
                 document.getElementById('reveal-buttons').style.display = 'none';
                 document.getElementById('next-buttons').style.display = 'block';
+                document.getElementById('btn-next').focus(); // Shifts Enter key control to "Next Question"
             } else {
                 if(mode === 'drill') { 
                     alert("Knockout! Wrong Answer.\nCorrect was: " + currentQ.a[0] + "\nStreak: " + streak); 
@@ -191,6 +215,13 @@
                 }
             }
             document.getElementById('streak-counter').innerText = "Streak: " + streak;
+        }
+
+        function skipQuestion() {
+            clearInterval(timerInterval);
+            streak = 0;
+            document.getElementById('streak-counter').innerText = "Streak: " + streak;
+            loadQuestion();
         }
 
         function showTrick() {
@@ -212,6 +243,7 @@
             document.getElementById('feedback-msg').innerText = ""; 
             document.getElementById('reveal-buttons').style.display = 'none';
             document.getElementById('next-buttons').style.display = 'block';
+            document.getElementById('btn-next').focus();
             if(currentQ.solution) {
                 document.getElementById('specific-solution').innerHTML = "<strong>Walkthrough:</strong><br>" + currentQ.solution;
                 document.getElementById('specific-solution').style.display = 'block';
