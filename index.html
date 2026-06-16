@@ -12,7 +12,6 @@
         select { background: #333 !important; color: white !important; border: 1px solid #4499aa !important; padding: 10px; border-radius: 4px; margin-bottom: 15px; width: 80% !important; display: block; margin: 0 auto 15px; }
         #question { font-size: 1.8rem; margin: 25px 0; color: #fff; letter-spacing: 0.05em; word-spacing: 0.2em; line-height: 1.4; min-height: 60px; }
         #metadata { color: #44bbaa; margin: 0 0 5px 0; }
-        #format-hint { color: #aaaaaa; font-style: italic; margin-bottom: 10px; }
         button { background: #4499aa; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; font-weight: bold; }
         #bookmark-btn { background: #d4a017; }
         #help-btn { background: #8e44ad; }
@@ -45,9 +44,11 @@
         <div id="quiz" style="display:none;">
             <div class="hud"><span id="streak-counter">Streak: 0</span><span id="timer" style="display:none;"></span></div>
             <h4 id="metadata"></h4>
-            <p id="format-hint"></p>
             <h2 id="question"></h2>
             <input type="text" id="answer" autocomplete="off" placeholder="Answer..." onkeydown="if(event.key==='Enter') checkAnswer()">
+            
+            <p id="feedback-msg" style="min-height: 20px; margin: 0 0 15px 0; font-weight: bold; font-size: 1.1rem;"></p>
+
             <div id="action-buttons">
                 <button onclick="checkAnswer()">Submit</button>
                 <button id="help-btn" onclick="showTrick()">Help</button>
@@ -130,9 +131,15 @@
             ansInput.style.color = "white";
             ansInput.focus();
             
+            // Clear the feedback message when a new question loads
+            document.getElementById('feedback-msg').innerText = ""; 
+            
             document.getElementById('metadata').innerText = `Test ${currentQ.test} | Question #${currentQ.num}`;
-            document.getElementById('format-hint').innerText = currentQ.format || "";
-            document.getElementById('question').innerHTML = `\\(${currentQ.q}\\)`;
+            
+            // FORMAT HINT LOGIC: Adds the format hint in parentheses right next to the question
+            let formatText = currentQ.format ? ` <span style="font-size: 1.2rem; color: #aaaaaa;">(${currentQ.format})</span>` : "";
+            document.getElementById('question').innerHTML = `\\(${currentQ.q}\\)` + formatText;
+            
             renderMathInElement(document.getElementById('question'), {delimiters: [{left: "\\(", right: "\\)", display: false}]});
             
             if(mode === 'drill') {
@@ -149,11 +156,14 @@
         function checkAnswer() {
             const userAns = normalize(document.getElementById('answer').value);
             const correctList = currentQ.a.map(a => normalize(a));
+            let feedback = document.getElementById('feedback-msg');
             
             if (correctList.includes(userAns)) {
                 streak++;
                 clearInterval(timerInterval);
                 document.getElementById('answer').style.color = "#44bbaa";
+                feedback.innerText = "Correct!";
+                feedback.style.color = "#44bbaa";
                 document.getElementById('action-buttons').style.display = 'none';
                 document.getElementById('reveal-buttons').style.display = 'none';
                 document.getElementById('next-buttons').style.display = 'block';
@@ -164,6 +174,8 @@
                 } else { 
                     streak = 0; 
                     document.getElementById('answer').style.color = "#ff6b6b";
+                    feedback.innerText = "Answer is incorrect. Try again!";
+                    feedback.style.color = "#ff6b6b";
                 }
             }
             document.getElementById('streak-counter').innerText = "Streak: " + streak;
@@ -185,6 +197,7 @@
             document.getElementById('answer').disabled = true;
             document.getElementById('answer').value = currentQ.a[0];
             document.getElementById('answer').style.color = "#ff6b6b";
+            document.getElementById('feedback-msg').innerText = ""; // Hide error msg on give up
             document.getElementById('reveal-buttons').style.display = 'none';
             document.getElementById('next-buttons').style.display = 'block';
             if(currentQ.solution) {
