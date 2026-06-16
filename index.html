@@ -105,8 +105,15 @@
         }
 
         function startDrill(colName) {
-            activeQuestions = getFilteredQuestions(window[colName]);
+            let selectedCol;
+            if (colName === 'column1') selectedCol = column1;
+            else if (colName === 'column2') selectedCol = column2;
+            else if (colName === 'column3') selectedCol = column3;
+            else if (colName === 'column4') selectedCol = column4;
+
+            activeQuestions = getFilteredQuestions(selectedCol);
             if(activeQuestions.length === 0) { alert("No questions matched filter."); return; }
+            
             questionPool = shuffleArray(activeQuestions);
             mode = 'drill';
             document.getElementById('timer').style.display = 'block';
@@ -174,7 +181,6 @@
                     streak = 0; 
                     document.getElementById('answer').style.color = "#ff6b6b";
                     
-                    // Alternating text logic
                     errorToggle = !errorToggle;
                     if (errorToggle) {
                         feedback.innerText = "Answer is incorrect. Try again!";
