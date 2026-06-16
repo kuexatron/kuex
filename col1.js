@@ -1,5 +1,4 @@
 const column1 = [
- // --- OFFICIAL TEST 1 (Questions 1-20) ---
     {"id":"001-1", "q":"\\frac{3}{4} + \\frac{2}{3} =", "a":["17/12", "1 5/12"], "test":"001", "num":"1", "source":"official", "trickId":"t_frac_add", "solution":"(9+8)/12 = 17/12"},
     {"id":"001-2", "q":"25 \\times 215 =", "a":["5375"], "test":"001", "num":"2", "source":"official", "trickId":"t_mult_25", "solution":"215/4 = 53 R3 -> 5375"},
     {"id":"001-3", "q":".075 =", "a":["3/40"], "format":"improper fraction", "test":"001", "num":"3", "source":"official", "trickId":"t_perc_frac", "solution":"75/1000 = 3/40"},
@@ -20,8 +19,6 @@ const column1 = [
     {"id":"001-18", "q":"9 + 10 \\times 11 - 12 =", "a":["107"], "test":"001", "num":"18", "source":"official", "trickId":"t_order_of_operations", "solution":"119-12 = 107"},
     {"id":"001-19", "q":"23+28+33+38+43+48 =", "a":["213"], "test":"001", "num":"19", "source":"official", "trickId":"t_arith_series", "solution":"6*(71)/2 = 213"},
     {"id":"001-20", "q":"(60 \\div 3 \\div 2 \\times 3)^{2} =", "a":["900", "1089"], "test":"001", "num":"20", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 1035-1143"},
-    
-   // --- OFFICIAL TEST 2 (Questions 1-20) ---
     {"id":"002-1", "q":"972 - 279 =", "a":["693"], "test":"002", "num":"1", "source":"official", "trickId":"t_raw_math", "solution":"972-279 = 693"},
     {"id":"002-2", "q":"17 + 9 - 13 + 23 =", "a":["36"], "test":"002", "num":"2", "source":"official", "trickId":"t_raw_math", "solution":"17+9 = 26. 26-13 = 13. 13+23 = 36"},
     {"id":"002-3", "q":"\\frac{6}{13} \\times \\frac{26}{15} \\times \\frac{5}{12} =", "a":["1/3"], "test":"002", "num":"3", "source":"official", "trickId":"t_cross_cancel", "solution":"Cross cancel: (6/12 = 1/2), (26/13 = 2), (5/15 = 1/3). 1/2 * 2 * 1/3 = 1/3"},
@@ -42,8 +39,6 @@ const column1 = [
     {"id":"002-18", "q":"LCM(35, 55) \\times GCD(35, 55) =", "a":["1925"], "test":"002", "num":"18", "source":"official", "trickId":"t_gcd_lcm", "solution":"LCM * GCD = A * B. 35 * 55 = 1925"},
     {"id":"002-19", "q":"CDXLIV + MDLXIX =", "a":["2013"], "format":"Arabic Numeral", "test":"002", "num":"19", "source":"official", "trickId":"t_roman_num", "solution":"444 + 1569 = 2013"},
     {"id":"002-20", "q":"987 - 654 \\times 321 =", "a":["-208947"], "test":"002", "num":"20", "source":"official", "trickId":"t_order_of_operations", "solution":"Estimation. Acceptable range: -219395 to -198499"},
-
-  // --- OFFICIAL TEST 3 (Questions 1-20) ---
     {"id":"003-1", "q":"14 \\times 32 =", "a":["448"], "test":"003", "num":"1", "source":"official", "trickId":"t_double_half", "solution":"7 * 64 = 448"},
     {"id":"003-2", "q":"27.5\\% =", "a":["11/40"], "format":"proper fraction", "test":"003", "num":"2", "source":"official", "trickId":"t_perc_frac", "solution":"27.5 / 100 = 275 / 1000 = 11/40"},
     {"id":"003-3", "q":"2001 \\times 17 + 3 =", "a":["34020"], "test":"003", "num":"3", "source":"official", "trickId":"t_distributive", "solution":"34017 + 3 = 34020"},
@@ -63,5 +58,5 @@ const column1 = [
     {"id":"003-17", "q":"34 \\times 46 =", "a":["1564"], "test":"003", "num":"17", "source":"official", "trickId":"t_distributive", "solution":"34 * 46 = 1564"},
     {"id":"003-18", "q":"15^{2} =", "a":["225"], "test":"003", "num":"18", "source":"official", "trickId":"t_raw_math", "solution":"15 * 15 = 225"},
     {"id":"003-19", "q":"\\text{The GCD of } 78 \\text{ and } 114 \\text{ is}", "a":["6"], "test":"003", "num":"19", "source":"official", "trickId":"t_lcm_gcd_calc", "solution":"78 = 6*13. 114 = 6*19. GCD = 6"},
-    {"id":"003-20", "q":"7532 \\times 1468 =", "a":["11056976"], "test":"003", "num":"20", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 10504128 - 11609824"},
+    {"id":"003-20", "q":"7532 \\times 1468 =", "a":["11056976"], "test":"003", "num":"20", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 10504128 - 11609824"}
 ];
