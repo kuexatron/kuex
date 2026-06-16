@@ -80,6 +80,7 @@
         window.onerror = function(msg, src, ln) { alert("Data Error in " + src + " on line " + ln + "\nCheck for missing/extra commas."); };
 
         let mode = '', activeQuestions = [], questionPool = [], currentQ = null, streak = 0, timerInterval;
+        let errorToggle = false; 
         let bookmarks = JSON.parse(localStorage.getItem('ns_bookmarks') || '[]');
 
         function normalize(str) { return str.toLowerCase().replace(/&/g, ' ').replace(/\s+/g, ''); }
@@ -131,12 +132,10 @@
             ansInput.style.color = "white";
             ansInput.focus();
             
-            // Clear the feedback message when a new question loads
             document.getElementById('feedback-msg').innerText = ""; 
             
             document.getElementById('metadata').innerText = `Test ${currentQ.test} | Question #${currentQ.num}`;
             
-            // FORMAT HINT LOGIC: Adds the format hint in parentheses right next to the question
             let formatText = currentQ.format ? ` <span style="font-size: 1.2rem; color: #aaaaaa;">(${currentQ.format})</span>` : "";
             document.getElementById('question').innerHTML = `\\(${currentQ.q}\\)` + formatText;
             
@@ -174,7 +173,14 @@
                 } else { 
                     streak = 0; 
                     document.getElementById('answer').style.color = "#ff6b6b";
-                    feedback.innerText = "Answer is incorrect. Try again!";
+                    
+                    // Alternating text logic
+                    errorToggle = !errorToggle;
+                    if (errorToggle) {
+                        feedback.innerText = "Answer is incorrect. Try again!";
+                    } else {
+                        feedback.innerText = "Still incorrect. Give it another shot!";
+                    }
                     feedback.style.color = "#ff6b6b";
                 }
             }
@@ -197,7 +203,7 @@
             document.getElementById('answer').disabled = true;
             document.getElementById('answer').value = currentQ.a[0];
             document.getElementById('answer').style.color = "#ff6b6b";
-            document.getElementById('feedback-msg').innerText = ""; // Hide error msg on give up
+            document.getElementById('feedback-msg').innerText = ""; 
             document.getElementById('reveal-buttons').style.display = 'none';
             document.getElementById('next-buttons').style.display = 'block';
             if(currentQ.solution) {
