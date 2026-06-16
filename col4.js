@@ -1,5 +1,4 @@
 const column4 = [
-    // --- OFFICIAL TEST 1 (Questions 61-80) ---
     {"id":"001-61", "q":"\\sin(\\frac{13\\pi}{6}) =", "a":[".5", "1/2"], "test":"001", "num":"61", "source":"official", "trickId":"t_trig_reference_angles", "solution":"sin(pi/6) = 0.5"},
     {"id":"001-62", "q":"\\sqrt{444889} =", "a":["667"], "test":"001", "num":"62", "source":"official", "trickId":"t_raw_math", "solution":"Ends in 9 -> 3 or 7. Near 660^2. Result: 667"},
     {"id":"001-63", "q":"\\tan(\\frac{\\pi}{3}) =", "a":["\\sqrt{3}"], "test":"001", "num":"63", "source":"official", "trickId":"t_trig_unit_circle", "solution":"\\sqrt{3}"},
@@ -19,9 +18,7 @@ const column4 = [
     {"id":"001-77", "q":"\\text{If } f(x)=3x^{2}-2x+1 \\text{ then } f^{\\prime}(-4) =", "a":["-26"], "test":"001", "num":"77", "source":"official", "trickId":"t_calc_power_rule", "solution":"6(-4) - 2 = -26"},
     {"id":"001-78", "q":"\\int_{-2}^{2} x^{2} dx =", "a":["16/3", "5 1/3"], "test":"001", "num":"78", "source":"official", "trickId":"t_calc_definite_integral", "solution":"[x^3/3] = 8/3 - (-8/3) = 16/3"},
     {"id":"001-79", "q":"\\text{If the initial point of a vector is } (3,7) \\text{ and the terminal point is } (-1,4), \\text{ then } ||v|| =", "a":["5"], "test":"001", "num":"79", "source":"official", "trickId":"t_raw_math", "solution":"sqrt((-4)^2 + (-3)^2) = 5"},
-    {"id":"001-80", "q":"798 \\div 44\\frac{4}{9}\\% \\times .25 =", "a":["449"], "test":"001", "num":"80", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 427-471"}
-
-    // --- OFFICIAL TEST 2 (Questions 61-80) ---
+    {"id":"001-80", "q":"798 \\div 44\\frac{4}{9}\\% \\times .25 =", "a":["449"], "test":"001", "num":"80", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 427-471"},
     {"id":"002-61", "q":"\\sin(\\frac{13\\pi}{6}) =", "a":[".5", "1/2"], "test":"002", "num":"61", "source":"official", "trickId":"t_trig_reference_angles", "solution":"sin(pi/6) = 0.5"},
     {"id":"002-62", "q":"\\text{If } f(x)=3x-\\log_{2}x, \\text{ find } f(4)", "a":["10"], "test":"002", "num":"62", "source":"official", "trickId":"t_raw_math", "solution":"12 - 2 = 10"},
     {"id":"002-63", "q":"(2+3i)(4-5i)=a+bi \\text{ and } b =", "a":["2"], "test":"002", "num":"63", "source":"official", "trickId":"t_raw_math", "solution":"Inner + Outer: 12i - 10i = 2i. b=2"},
@@ -41,9 +38,7 @@ const column4 = [
     {"id":"002-77", "q":"\\lim_{x\\rightarrow0}\\frac{e^{x}-1}{x} =", "a":["1"], "test":"002", "num":"77", "source":"official", "trickId":"t_limit_ex", "solution":"1"},
     {"id":"002-78", "q":"1+3+6+10+...+28 =", "a":["84"], "test":"002", "num":"78", "source":"official", "trickId":"t_arith_series", "solution":"Sum of first 7 triangular numbers = 7(8)(9)/6 = 84"},
     {"id":"002-79", "q":"\\lim_{x\\rightarrow2}\\frac{2x^{2}-3x-2}{x-2} =", "a":["5"], "test":"002", "num":"79", "source":"official", "trickId":"t_limit_ex", "solution":"Derivative of numerator at x=2 -> 4(2)-3 = 5"},
-    {"id":"002-80", "q":"798 \\div 44\\frac{4}{9}\\% \\times .25 =", "a":["449"], "test":"002", "num":"80", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 427-471"}
-
-    // --- OFFICIAL TEST 3 (Questions 61-80) ---
+    {"id":"002-80", "q":"798 \\div 44\\frac{4}{9}\\% \\times .25 =", "a":["449"], "test":"002", "num":"80", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 427-471"},
     {"id":"003-61", "q":"31^{2} - 33^{2} + 35^{2} - 37^{2} =", "a":["-272"], "test":"003", "num":"61", "source":"official", "trickId":"t_diff_squares", "solution":"(31-33)(31+33) + (35-37)(35+37) = -2(64) - 2(72) = -272"},
     {"id":"003-62", "q":"\\frac{5}{6} + 1.2 - 2 =", "a":["1/30"], "test":"003", "num":"62", "source":"official", "trickId":"t_frac_add", "solution":"5/6 + 6/5 - 2 = (25+36-60)/30 = 1/30"},
     {"id":"003-63", "q":"\\sin(\\frac{13\\pi}{6}) =", "a":[".5", "1/2"], "test":"003", "num":"63", "source":"official", "trickId":"t_trig_reference_angles", "solution":"sin(pi/6) = 0.5"},
