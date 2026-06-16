@@ -1,5 +1,4 @@
 const column2 = [
- // --- OFFICIAL TEST 1 (Questions 21-40) ---
     {"id":"001-21", "q":"6\\frac{6}{13} \\times 4\\frac{1}{3} =", "a":["28"], "test":"001", "num":"21", "source":"official", "trickId":"t_frac_add", "solution":"84/13 * 13/3 = 28"},
     {"id":"001-22", "q":"\\{s,l,o,p,e\\} \\cap \\{l,i,n,e\\} \\text{ has distinct elements}", "a":["2"], "test":"001", "num":"22", "source":"official", "trickId":"t_set_intersection", "solution":"{l, e} -> 2"},
     {"id":"001-23", "q":"\\text{Find the area of a square whose diagonal is } 8\\text{in.}", "a":["32"], "test":"001", "num":"23", "source":"official", "trickId":"t_raw_math", "solution":"d^2 / 2 = 64/2 = 32"},
@@ -20,8 +19,6 @@ const column2 = [
     {"id":"001-38", "q":"5\\frac{1}{4} \\times 5\\frac{3}{4} =", "a":["30 3/16"], "format":"mixed number", "test":"001", "num":"38", "source":"official", "trickId":"t_raw_math", "solution":"30 3/16"},
     {"id":"001-39", "q":"14443 \\times 15 =", "a":["216645"], "test":"001", "num":"39", "source":"official", "trickId":"t_magic_14443", "solution":"202202 + 14443 = 216645"},
     {"id":"001-40", "q":"\\sqrt{20164} =", "a":["142"], "test":"001", "num":"40", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 135-149"},
-
-  // --- OFFICIAL TEST 2 (Questions 21-40) ---
     {"id":"002-21", "q":"6 \\text{ pints is what percent of a gallon?}", "a":["75"], "test":"002", "num":"21", "source":"official", "trickId":"t_unit_conversion", "solution":"6 pints / 8 pints = 3/4 = 75%"},
     {"id":"002-22", "q":"24\\% \\text{ of \\_\\_\\_ is } 28\\% \\text{ of } 12.", "a":["14"], "test":"002", "num":"22", "source":"official", "trickId":"t_proportions", "solution":".24x = .28(12) -> x = 28(12)/24 = 14"},
     {"id":"002-23", "q":"\\text{If } f(x)=x^{2}-8x+16 \\text{ then } f(24) =", "a":["400"], "test":"002", "num":"23", "source":"official", "trickId":"t_perfect_sq_trinomial", "solution":"f(x) = (x-4)^2. (24-4)^2 = 20^2 = 400"},
@@ -42,8 +39,6 @@ const column2 = [
     {"id":"002-38", "q":"43_{8} - 21_{8} = \\text{\\_\\_\\_}_{8}", "a":["22"], "test":"002", "num":"38", "source":"official", "trickId":"t_raw_math", "solution":"4-2=2, 3-1=2 -> 22_8"},
     {"id":"002-39", "q":"1 \\text{ gallon} = \\text{\\_\\_\\_ ounces}", "a":["128"], "test":"002", "num":"39", "source":"official", "trickId":"t_unit_conversion", "solution":"1 gal = 128 oz"},
     {"id":"002-40", "q":"\\sqrt[3]{1730} \\times \\sqrt{142} \\times 12 =", "a":["1716"], "test":"002", "num":"40", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 1631-1802. (12 * 11.9 * 12 ≈ 1716)"},
-
-   // --- OFFICIAL TEST 3 (Questions 21-40) ---
     {"id":"003-21", "q":"\\text{If } x=5 \\text{ and } y=2 \\text{ then } x^{2}-2xy+y^{2} =", "a":["9"], "test":"003", "num":"21", "source":"official", "trickId":"t_perfect_sq_trinomial", "solution":"(x-y)^2 = (5-2)^2 = 3^2 = 9"},
     {"id":"003-22", "q":"6 \\text{ pints is what percent of a gallon?}", "a":["75"], "test":"003", "num":"22", "source":"official", "trickId":"t_unit_conversion", "solution":"6/8 = 0.75 = 75%"},
     {"id":"003-23", "q":"423156 \\div 12 \\text{ has a remainder of}", "a":["0"], "test":"003", "num":"23", "source":"official", "trickId":"t_raw_math", "solution":"423156 is perfectly divisible by 12 (divisible by 3 and 4). Remainder 0"},
@@ -63,6 +58,5 @@ const column2 = [
     {"id":"003-37", "q":".5757... =", "a":["19/33"], "format":"fraction", "test":"003", "num":"37", "source":"official", "trickId":"t_perc_frac", "solution":"57/99 = 19/33"},
     {"id":"003-38", "q":"\\text{If } x=-3 \\text{ and } y=-2 \\text{ then } x^{2}-2xy+y^{2} =", "a":["1"], "test":"003", "num":"38", "source":"official", "trickId":"t_perfect_sq_trinomial", "solution":"(x-y)^2 = (-3 - (-2))^2 = (-1)^2 = 1"},
     {"id":"003-39", "q":"\\text{If } 5x+7=6x-2 \\text{ then } x =", "a":["9"], "test":"003", "num":"39", "source":"official", "trickId":"t_linear_equation", "solution":"Subtract 5x: 7 = x - 2 -> x = 9"},
-    {"id":"003-40", "q":"24 \\times 34 \\times 44 =", "a":["35904"], "test":"003", "num":"40", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 34109-37699"},
-    {"id":"003-40", "q":"2.5 \\times 12 =", "a":["30"], "test":"003", "num":"40", "source":"official", "trickId":"t_raw_math", "solution":"30"}
+    {"id":"003-40", "q":"24 \\times 34 \\times 44 =", "a":["35904"], "test":"003", "num":"40", "source":"official", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 34109-37699"}
 ];
