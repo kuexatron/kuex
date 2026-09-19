@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UIL Number Sense Practice</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        body { background-color: #1a1a1a; color: #e0e0e0; font-family: 'Times New Roman', Times, serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        #app { background: #262626; padding: 40px; border-radius: 12px; border: 1px solid #4499aa; text-align: center; width: 100%; max-width: 650px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        input { padding: 12px; font-size: 1.5rem; width: 80%; margin-bottom: 15px; background: #333 !important; border: 1px solid #555 !important; color: white !important; border-radius: 4px; text-align: center; }
+        input:disabled { opacity: 0.7; cursor: not-allowed; }
+        select { background: #333 !important; color: white !important; border: 1px solid #4499aa !important; padding: 10px; border-radius: 4px; margin-bottom: 15px; width: 80% !important; display: block; margin: 0 auto 15px; }
+        #question { font-size: 1.8rem; margin: 25px 0; color: #fff; letter-spacing: 0.05em; word-spacing: 0.2em; line-height: 1.4; min-height: 60px; overflow-wrap: break-word; word-break: break-word; white-space: normal; max-width: 100%; }
+        #question .katex { white-space: normal !important; }
+        #question .katex-display { display: inline-block; white-space: normal !important; }
+        #metadata { color: #44bbaa; margin: 0 0 5px 0; }
+        button { background: #4499aa; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 1rem; border-radius: 4px; margin: 5px; font-weight: bold; }
+        button:focus { outline: 2px solid #fff; }
+        #bookmark-btn { background: #d4a017; }
+        #help-btn { background: #8e44ad; }
+        .btn-giveup { background: #ff6b6b; }
+        .btn-skip { background: #555555; }
+        .hud { display: flex; justify-content: space-between; font-size: 1.2rem; color: #44bbaa; margin-bottom: 20px; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        #timer { color: #ff6b6b; }
+        .title-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; text-align: left; }
+        .title-row h1 { margin: 0; font-size: 1.9rem; }
+        #source-select { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+        #source-select label { font-size: 0.95rem; white-space: nowrap; cursor: pointer; }
+        #source-select input { width: auto !important; margin: 0 6px 0 0; vertical-align: middle; }
+        #review-panel { display: none; background: #1f1f1f; padding: 15px; margin-top: 20px; text-align: left; border-left: 4px solid #44bbaa; }
+        #review-grid { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; max-height: 160px; overflow-y: auto; padding: 8px; background: #1f1f1f; border-radius: 4px; }
+        .rev-num { width: 38px; height: 34px; padding: 0; margin: 0; font-size: 0.85rem; border-radius: 3px; }
+        .rev-correct { background: #2e7d6b; }
+        .rev-wrong { background: #b1493f; }
+        .rev-skipped { background: #555555; }
+        .rev-active { outline: 2px solid #fff; }
+        #review-question { font-size: 1.6rem; margin: 10px 0 18px; color: #fff; overflow-wrap: break-word; word-break: break-word; }
+        #review-question .katex { white-space: normal !important; }
+        #specific-solution { margin-top: 15px; padding: 10px; background: #2a2a2a; border-left: 3px solid #ff6b6b; font-family: monospace; display: none; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="menu">
+            <div class="title-row">
+                <h1>UIL Number Sense</h1>
+                <div id="source-select">
+                    <label><input type="checkbox" id="src-official" checked onchange="refreshTestDropdowns()"> Official UIL</label>
+                    <label><input type="checkbox" id="src-heath" checked onchange="refreshTestDropdowns()"> Bryan Heath</label>
+                    <label><input type="checkbox" id="src-monkeysense" checked onchange="refreshTestDropdowns()"> MonkeySense</label>
+                </div>
+            </div>
+            <button onclick="startGlobalPractice()">Global Practice</button>
+            <button onclick="showColumns()">Knockout Drill</button>
+            <button onclick="showTestMode()">Test Mode</button>
+            <div id="col-select" style="display:none; margin-top:20px;">
+                <div id="knockout-type-buttons">
+                    <button onclick="chooseKnockoutType('endurance')">Endurance (timer per question)</button>
+                    <button onclick="chooseKnockoutType('sprint')">Timed Sprint (one clock)</button>
+                </div>
+                <div id="knockout-main" style="display:none;">
+                    <div id="knockout-config" style="margin-bottom:15px;">
+                        <label style="display:block; margin-bottom:10px;">Which test?
+                            <select id="knockout-test-select" style="margin-top:6px;"></select>
+                        </label>
+                        <label style="font-size:0.95rem; display:block;"><input type="checkbox" id="knockout-scramble" checked style="width:auto !important; margin-bottom:0;"> Scramble question order</label>
+                        <div id="sprint-options" style="display:none; margin-top:10px;">
+                            <label style="font-size:0.95rem; display:block;"><input type="checkbox" id="sprint-end-on-wrong" style="width:auto !important; margin-bottom:0;"> End immediately on a wrong answer</label>
+                            <label style="font-size:0.95rem; display:block;"><input type="checkbox" id="sprint-skip-feedback" style="width:auto !important; margin-bottom:0;"> Skip correct/incorrect screens</label>
+                        </div>
+                    </div>
+                    <div id="column-buttons">
+                        <button onclick="selectColumn('column1')">Column 1 (Q1-20)</button>
+                        <button onclick="selectColumn('column2')">Column 2 (Q21-40)</button>
+                        <button onclick="selectColumn('column3')">Column 3 (Q41-60)</button>
+                        <button onclick="selectColumn('column4')">Column 4 (Q61-80)</button>
+                    </div>
+                    <div id="pacing-select" style="display:none; margin-top:15px;">
+                        <h4 id="pacing-heading" style="color:#44bbaa; margin-bottom:10px; font-weight:normal;">Seconds per question</h4>
+                        <div id="endurance-times">
+                            <button onclick="selectPacing(10)">10 sec</button>
+                            <button onclick="selectPacing(30)">30 sec</button>
+                            <button onclick="selectPacing(90)">1 min 30 sec</button>
+                            <button onclick="toggleCustomPacing()">Custom</button>
+                        </div>
+                        <div id="sprint-times" style="display:none;">
+                            <button onclick="selectPacing(120)">2 min</button>
+                            <button onclick="selectPacing(300)">5 min</button>
+                            <button onclick="selectPacing(600)">10 min</button>
+                            <button onclick="toggleCustomPacing()">Custom</button>
+                        </div>
+                        <div id="custom-pacing" style="display:none; margin-top:12px;">
+                            <input type="number" id="custom-minutes" min="0" placeholder="Min" style="width:70px; display:inline-block; padding:8px; font-size:1rem; margin-right:5px; margin-bottom:0;">
+                            <input type="number" id="custom-seconds" min="0" max="59" placeholder="Sec" style="width:70px; display:inline-block; padding:8px; font-size:1rem; margin-bottom:0;">
+                            <button onclick="confirmCustomPacing()" style="display:block; margin:12px auto 0;">Start Drill</button>
+                        </div>
+                        <button onclick="backToColumns()" style="background:transparent; color:#888; border:1px solid #555; margin-top:15px; display:block; margin-left:auto; margin-right:auto;">Back</button>
+                    </div>
+                    <button onclick="backToKnockoutType()" style="background:transparent; color:#888; border:1px solid #555; margin-top:15px; display:block; margin-left:auto; margin-right:auto;">Back</button>
+                </div>
+            </div>
+            <div id="test-mode-select" style="display:none; margin-top:20px;">
+                <h4 style="color:#44bbaa; margin:0 0 8px; font-weight:normal;">Pick one or more tests</h4>
+                <div style="margin-bottom:8px;">
+                    <button onclick="setAllTestModeTests(true)" style="padding:6px 12px; font-size:0.85rem;">Select All</button>
+                    <button onclick="setAllTestModeTests(false)" style="padding:6px 12px; font-size:0.85rem; background:#555;">Clear</button>
+                </div>
+                <div id="testmode-test-list" style="max-height:170px; overflow-y:auto; text-align:left; background:#1f1f1f; border:1px solid #444; border-radius:4px; padding:10px; margin-bottom:14px;"></div>
+                <label style="font-size:0.95rem; display:block; margin-bottom:6px;"><input type="checkbox" id="testmode-mix" style="width:auto !important; margin-bottom:0;"> Pull random questions from each selected test</label>
+                <label style="font-size:0.95rem; display:block; margin-bottom:14px;"><input type="checkbox" id="testmode-scramble" style="width:auto !important; margin-bottom:0;"> Scramble question order</label>
+                <button onclick="startTestMode()">Start Test</button>
+            </div>
+        </div>
+
+        <div id="quiz" style="display:none;">
+            <div class="hud"><span id="streak-counter">Streak: 0</span><span id="progress-indicator" style="display:none;"></span><span id="timer" style="display:none;"></span></div>
+            <h4 id="metadata"></h4>
+            <h2 id="question"></h2>
+            <input type="text" id="answer" autocomplete="off" placeholder="Answer..." onkeydown="if(event.key==='Enter') checkAnswer()">
+            
+            <p id="feedback-msg" style="min-height: 20px; margin: 0 0 15px 0; font-weight: bold; font-size: 1.1rem;"></p>
+
+            <div id="action-buttons">
+                <button onclick="checkAnswer()">Submit</button>
+                <button class="btn-skip" onclick="skipQuestion()">Skip</button>
+                <button id="help-btn" onclick="showTrick()">Help</button>
+                <button id="bookmark-btn" onclick="toggleBookmark()">Bookmark</button>
+            </div>
+            <div id="reveal-buttons" style="display:none;">
+                <button onclick="checkAnswer()">Submit</button>
+                <button class="btn-giveup" onclick="giveUp()">Give Up</button>
+            </div>
+            <div id="next-buttons" style="display:none;">
+                <button id="btn-next" onclick="goToNextQuestion()">Continue</button>
+                <button onclick="location.reload()" style="background:transparent; color:#888; border:1px solid #555;">Back to Menu</button>
+            </div>
+            <div id="review-panel">
+                <h3 id="trick-title"></h3>
+                <p id="trick-text"></p>
+                <p id="specific-solution"></p>
+            </div>
+            <button onclick="location.reload()" style="background:transparent; color:#888; border:1px solid #555; margin-top:20px;">Exit to Menu</button>
+        </div>
+
+        <div id="review-screen" style="display:none;">
+            <h2 id="review-score" style="color:#44bbaa; margin-top:0; white-space:pre-line;"></h2>
+            <p style="color:#888; font-size:0.9rem; margin-top:-10px;">Tap a number to jump, or use the arrows. Arrow keys work too.</p>
+            <div id="review-grid"></div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin:20px 0 10px;">
+                <button onclick="reviewStep(-1)" style="font-size:1.3rem; padding:8px 18px;">&#8592;</button>
+                <span id="review-position" style="color:#44bbaa; font-size:1.1rem;"></span>
+                <button onclick="reviewStep(1)" style="font-size:1.3rem; padding:8px 18px;">&#8594;</button>
+            </div>
+            <h4 id="review-metadata" style="color:#44bbaa; margin:0 0 5px;"></h4>
+            <h2 id="review-question"></h2>
+            <div id="review-answers" style="text-align:left; background:#1f1f1f; padding:14px; border-radius:4px; margin-bottom:14px;"></div>
+            <div id="review-trick" style="text-align:left; background:#1f1f1f; padding:14px; border-left:4px solid #44bbaa;"></div>
+            <button onclick="location.reload()" style="background:transparent; color:#888; border:1px solid #555; margin-top:20px;">Exit to Menu</button>
+        </div>
+    </div>
+
+
+
+    <script>
+const tricksDatabase = {
+    "t_raw_math": { "title": "Basic Arithmetic", "text": "Pure arithmetic calculation. Do the mental math left-to-right as quickly as possible." },
+    "t_order_of_operations": { "title": "Order of Operations", "text": "Follow PEMDAS. 1) Parentheses. 2) Exponents. 3) Mult/Div. 4) Add/Sub." },
+    "t_frac_add": { "title": "Adding Fractions", "text": "Multiply diagonally and add for the numerator (ad + bc). Multiply denominators for the bottom (bd)." },
+    "t_perc_frac": { "title": "Percentages to Fractions", "text": "Memorize fraction families. 1/8=12.5%, 1/40=2.5%, etc." },
+    "t_div_5": { "title": "Dividing by 5", "text": "Multiply by 2 and move the decimal point one place to the left." },
+    "t_roman_num": { "title": "Roman Numerals", "text": "M=1000, D=500, C=100, L=50, X=10, V=5, I=1." },
+    "t_arith_series": { "title": "Arithmetic Series Sum", "text": "Average the first and last term, then multiply by the number of terms." },
+    "t_distributive": { "title": "Distributive Property", "text": "Break one number into easier parts. (e.g., 12 * 17 = 12 * 10 + 12 * 7)." },
+    "t_cross_cancel": { "title": "Cross-Cancellation", "text": "Cancel common factors in numerators and denominators before multiplying." },
+    "t_foil": { "title": "FOILing", "text": "Multiply Last digits. Multiply Inner + Outer digits. Multiply First digits." },
+    "t_mult_near_100": { "title": "Multiplying Near 100", "text": "Find distances from 100. Multiply diffs for last two digits. Cross-add for first digits." },
+    "t_mult_25": { "title": "Multiplying by 25", "text": "Divide by 4, multiply by 100. Remainder 1=25, 2=50, 3=75." },
+    "t_negative_zero_exponents": { "title": "Negative Exponents", "text": "x^0 = 1. Negative exponent is a reciprocal: x^-n = 1 / x^n." },
+    "t_gcd_lcm": { "title": "GCD and LCM", "text": "GCD(A,B) * LCM(A,B) = A * B." },
+    "t_mult_end_5": { "title": "Numbers Ending in 5", "text": "If tens sum is even, ends in 25; odd, 75. Add half the sum of tens to tens product." },
+    "t_unit_conversion": { "title": "Unit Conversions", "text": "1 Gal = 4 Qt = 8 Pt = 16 Cups = 128 Oz." },
+    "t_div_9_trick": { "title": "Dividing by 9", "text": "Bring down first digit, add to next, repeat. Final sum is remainder." },
+    "t_diff_cubes": { "title": "Difference of Cubes", "text": "(a-b)(a^2+ab+b^2) = a^3 - b^3." },
+    "t_absolute_value": { "title": "Absolute Value", "text": "Work from the inside out. All negative results become positive." },
+    "t_magic_14443": { "title": "Magic 14443", "text": "Memorize: 14443 * 7 = 101101." },
+    "t_diff_squares": { "title": "Difference of Squares", "text": "a^2 - b^2 = (a-b)(a+b)." },
+    "t_proportions": { "title": "Proportions", "text": "Set up equation A * B = C * x and simplify." },
+    "t_set_intersection": { "title": "Set Intersection", "text": "Count only the elements that exist in BOTH sets." },
+    "t_perfect_sq_trinomial": { "title": "Perfect Square Trinomial", "text": "a^2 - 2ab + b^2 = (a-b)^2." },
+    "t_linear_equation": { "title": "Linear Equations", "text": "Group variables on one side, constants on the other." },
+    "t_mult_3x3": { "title": "3x3 Multiplication", "text": "Cross-multiply moving right to left: 1, 2, 3, 2, 1 columns." },
+    "t_shared_factor": { "title": "Shared Factor", "text": "Pull out a common factor before doing the math." },
+    "t_exponent_rules": { "title": "Exponent Rules", "text": "Multiply bases = add exponents. Divide = subtract." },
+    "t_linear_inequality": { "title": "Inequalities", "text": "Solve normally, but flip the sign if multiplying/dividing by negative." },
+    "t_mult_units_10": { "title": "Units Add to 10", "text": "Multiply units. Multiply front digit by (itself + 1)." },
+    "t_trig_reference_angles": { "title": "Trig Reference", "text": "Subtract 2pi until angle is on standard unit circle." },
+    "t_trig_unit_circle": { "title": "Unit Circle", "text": "Recall standard values. Tan = Sin / Cos." },
+    "t_alt_sum_squares": { "title": "Alternating Sum Squares", "text": "For series ending on -n^2: -[n(n+1)/2]." },
+    "t_log_properties": { "title": "Log Properties", "text": "ln(e^x) = x." },
+    "t_limit_ex": { "title": "Calculus Limits", "text": "lim x->0 (e^x-1)/x = 1." },
+    "t_calc_power_rule": { "title": "Power Rule", "text": "f'(x) of cx^n = (c*n)x^(n-1)." },
+    "t_inverse_trig": { "title": "Inverse Trig", "text": "Draw right triangle to find missing side." },
+    "t_mult_11": { "title": "Multiplying by 11", "text": "Write ones digit, add consecutive digits moving left." },
+    "t_sum_of_cubes": { "title": "Sum of Cubes", "text": "[n(n+1)/2]^2." },
+    "t_calc_definite_integral": { "title": "Definite Integrals", "text": "Antiderivative evaluated at upper minus lower bounds." },
+    "t_rational_asymptotes": { "title": "Asymptotes", "text": "Vertical where denom=0. Slant/Horiz based on degrees." },
+    "t_inverse_function_point": { "title": "Inverse Functions", "text": "Set f(x) equal to value and solve for x." },
+    "t_nested_logs": { "title": "Nested Logs", "text": "Evaluate inside out." },
+    "t_geom_series_inf": { "title": "Infinite Geometric", "text": "S = a / (1 - r)." },
+    "t_consecutive_mult": { "title": "Consecutive Mult", "text": "n*(n+1) = n^2 + n." },
+    "t_diff_sq_reverse": { "title": "Reverse Diff Squares", "text": "(n-1)(n+1) = n^2 - 1." },
+    "t_lcm_gcd_calc": { "title": "Finding GCD and LCM", "text": "Factor both numbers. GCD is the product of shared prime factors at their lowest powers; LCM uses every prime at its highest power." },
+    "t_double_half": { "title": "Double and Half", "text": "Double one factor, halve the other." }
+};
+
+    </script>
+
+    <script>
+const column1 = [
+    {"id":"001-1", "q":"\\frac{3}{4} + \\frac{2}{3} =", "a":["17/12", "1 5/12"], "test":"001", "num":"1", "source":"heath", "trickId":"t_frac_add", "solution":"(9+8)/12 = 17/12"},
+    {"id":"001-2", "q":"25 \\times 215 =", "a":["5375"], "test":"001", "num":"2", "source":"heath", "trickId":"t_mult_25", "solution":"215/4 = 53 R3 -> 5375"},
+    {"id":"001-3", "q":".075 =", "a":["3/40"], "format":"improper fraction", "test":"001", "num":"3", "source":"heath", "trickId":"t_perc_frac", "solution":"75/1000 = 3/40"},
+    {"id":"001-4", "q":"(24+18) \\div 12 \\times (3-6) =", "a":["-10.5", "-21/2", "-10 1/2"], "test":"001", "num":"4", "source":"heath", "trickId":"t_order_of_operations", "solution":"42/12 * -3 = -10.5"},
+    {"id":"001-5", "q":"7.5\\% =", "a":["3/40"], "format":"proper fraction", "test":"001", "num":"5", "source":"heath", "trickId":"t_perc_frac", "solution":"0.075 = 3/40"},
+    {"id":"001-6", "q":"263 \\div 5 =", "a":["52.6"], "format":"decimal", "test":"001", "num":"6", "source":"heath", "trickId":"t_div_5", "solution":"263*2 / 10 = 52.6"},
+    {"id":"001-7", "q":"28 \\div 11 + 82 \\div 11 =", "a":["10"], "test":"001", "num":"7", "source":"heath", "trickId":"t_frac_add", "solution":"110/11 = 10"},
+    {"id":"001-8", "q":"XLII =", "a":["42"], "format":"Arabic Numeral", "test":"001", "num":"8", "source":"heath", "trickId":"t_roman_num", "solution":"40+2 = 42"},
+    {"id":"001-9", "q":"\\frac{2}{7} + 2\\frac{1}{8} =", "a":["2 23/56", "135/56"], "format":"mixed number", "test":"001", "num":"9", "source":"heath", "trickId":"t_frac_add", "solution":"16/56 + 2 7/56 = 2 23/56"},
+    {"id":"001-10", "q":"13+159+347+891-10 =", "a":["1400", "1330", "1470"], "test":"001", "num":"10", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 1330-1470"},
+    {"id":"001-11", "q":"13+18+23+28+33+38 =", "a":["153"], "test":"001", "num":"11", "source":"heath", "trickId":"t_arith_series", "solution":"6*(51)/2 = 153"},
+    {"id":"001-12", "q":"MMVIII - MIV =", "a":["1004"], "test":"001", "num":"12", "source":"heath", "trickId":"t_roman_num", "solution":"2008-1004 = 1004"},
+    {"id":"001-13", "q":"12 \\times 17 =", "a":["204"], "test":"001", "num":"13", "source":"heath", "trickId":"t_distributive", "solution":"120+84 = 204"},
+    {"id":"001-14", "q":"280 \\text{ plus } 30\\% \\text{ of } 320 \\text{ is}", "a":["376"], "format":"Arabic Numeral", "test":"001", "num":"14", "source":"heath", "trickId":"t_raw_math", "solution":"280 + 96 = 376"},
+    {"id":"001-15", "q":"34^{2} =", "a":["1156"], "test":"001", "num":"15", "source":"heath", "trickId":"t_foil", "solution":"34*34 = 1156"},
+    {"id":"001-16", "q":"\\text{Which is smaller, } 1\\frac{1}{3} \\text{ or } 1.3?", "a":["1.3", "13/10", "1 3/10"], "test":"001", "num":"16", "source":"heath", "trickId":"t_raw_math", "solution":"1.333 > 1.3"},
+    {"id":"001-17", "q":"15 \\times \\frac{15}{17} =", "a":["13 4/17"], "test":"001", "num":"17", "source":"heath", "trickId":"t_raw_math", "solution":"225/17 = 13 4/17"},
+    {"id":"001-18", "q":"9 + 10 \\times 11 - 12 =", "a":["107"], "test":"001", "num":"18", "source":"heath", "trickId":"t_order_of_operations", "solution":"119-12 = 107"},
+    {"id":"001-19", "q":"23+28+33+38+43+48 =", "a":["213"], "test":"001", "num":"19", "source":"heath", "trickId":"t_arith_series", "solution":"6*(71)/2 = 213"},
+    {"id":"001-20", "q":"(60 \\div 3 \\div 2 \\times 3)^{2} =", "a":["900", "1089"], "test":"001", "num":"20", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 1035-1143"},
+    {"id":"002-1", "q":"972 - 279 =", "a":["693"], "test":"002", "num":"1", "source":"heath", "trickId":"t_raw_math", "solution":"972-279 = 693"},
+    {"id":"002-2", "q":"17 + 9 - 13 + 23 =", "a":["36"], "test":"002", "num":"2", "source":"heath", "trickId":"t_raw_math", "solution":"17+9 = 26. 26-13 = 13. 13+23 = 36"},
+    {"id":"002-3", "q":"\\frac{6}{13} \\times \\frac{26}{15} \\times \\frac{5}{12} =", "a":["1/3"], "test":"002", "num":"3", "source":"heath", "trickId":"t_cross_cancel", "solution":"Cross cancel: (6/12 = 1/2), (26/13 = 2), (5/15 = 1/3). 1/2 * 2 * 1/3 = 1/3"},
+    {"id":"002-4", "q":"1\\frac{1}{16} = \\text{\\_\\_\\_}\\%", "a":["106.25"], "format":"decimal", "test":"002", "num":"4", "source":"heath", "trickId":"t_perc_frac", "solution":"1 1/16 = 1.0625 = 106.25%"},
+    {"id":"002-5", "q":"75 \\times .84 =", "a":["63"], "test":"002", "num":"5", "source":"heath", "trickId":"t_cross_cancel", "solution":"3/4 * 84 = 3 * 21 = 63"},
+    {"id":"002-6", "q":"\\frac{3}{4} + \\frac{2}{3} =", "a":["17/12"], "format":"improper fraction", "test":"002", "num":"6", "source":"heath", "trickId":"t_frac_add", "solution":"(9+8)/12 = 17/12"},
+    {"id":"002-7", "q":"3^{0} + 2 \\times 5 + 4^{-1} =", "a":["11.25"], "format":"decimal", "test":"002", "num":"7", "source":"heath", "trickId":"t_negative_zero_exponents", "solution":"1 + 10 + 0.25 = 11.25"},
+    {"id":"002-8", "q":"2013 - 201 + 13 =", "a":["1825"], "test":"002", "num":"8", "source":"heath", "trickId":"t_raw_math", "solution":"2013 - 201 = 1812. 1812 + 13 = 1825"},
+    {"id":"002-9", "q":"3143 \\div 5 =", "a":["628.6"], "format":"decimal", "test":"002", "num":"9", "source":"heath", "trickId":"t_div_5", "solution":"3143 * 2 / 10 = 628.6"},
+    {"id":"002-10", "q":"549 \\times 62 =", "a":["34038"], "test":"002", "num":"10", "source":"heath", "trickId":"t_distributive", "solution":"Estimation. Acceptable range: 32337-35739. Exact: 34038"},
+    {"id":"002-11", "q":"\\text{Which is smaller, } 1\\frac{1}{3} \\text{ or } 1.3?", "a":["1.3", "13/10", "1 3/10"], "test":"002", "num":"11", "source":"heath", "trickId":"t_raw_math", "solution":"1.333... > 1.3"},
+    {"id":"002-12", "q":"-2 + |-1| - |-3+4| =", "a":["-2"], "test":"002", "num":"12", "source":"heath", "trickId":"t_absolute_value", "solution":"-2 + 1 - 1 = -2"},
+    {"id":"002-13", "q":"12 \\times 17 =", "a":["204"], "test":"002", "num":"13", "source":"heath", "trickId":"t_distributive", "solution":"120 + 84 = 204"},
+    {"id":"002-14", "q":"\\text{The number of positive integral divisors of } 20 \\text{ is}", "a":["6"], "test":"002", "num":"14", "source":"heath", "trickId":"t_raw_math", "solution":"20 = 2^2 * 5^1. (2+1)(1+1) = 3*2 = 6"},
+    {"id":"002-15", "q":"1211 \\div 9 =", "a":["134 5/9"], "format":"mixed number", "test":"002", "num":"15", "source":"heath", "trickId":"t_div_9_trick", "solution":"1211 / 9 = 134 R5 = 134 5/9"},
+    {"id":"002-16", "q":"\\frac{7}{8} = \\text{\\_\\_\\_}\\%", "a":["87 1/2"], "format":"mixed number", "test":"002", "num":"16", "source":"heath", "trickId":"t_perc_frac", "solution":"7/8 = 0.875 = 87 1/2%"},
+    {"id":"002-17", "q":"25 \\times 46 =", "a":["1150"], "test":"002", "num":"17", "source":"heath", "trickId":"t_mult_25", "solution":"4600 / 4 = 1150"},
+    {"id":"002-18", "q":"LCM(35, 55) \\times GCD(35, 55) =", "a":["1925"], "test":"002", "num":"18", "source":"heath", "trickId":"t_gcd_lcm", "solution":"LCM * GCD = A * B. 35 * 55 = 1925"},
+    {"id":"002-19", "q":"CDXLIV + MDLXIX =", "a":["2013"], "format":"Arabic Numeral", "test":"002", "num":"19", "source":"heath", "trickId":"t_roman_num", "solution":"444 + 1569 = 2013"},
+    {"id":"002-20", "q":"987 - 654 \\times 321 =", "a":["-208947"], "test":"002", "num":"20", "source":"heath", "trickId":"t_order_of_operations", "solution":"Estimation. Acceptable range: -219395 to -198499"},
+    {"id":"003-1", "q":"14 \\times 32 =", "a":["448"], "test":"003", "num":"1", "source":"heath", "trickId":"t_double_half", "solution":"7 * 64 = 448"},
+    {"id":"003-2", "q":"27.5\\% =", "a":["11/40"], "format":"proper fraction", "test":"003", "num":"2", "source":"heath", "trickId":"t_perc_frac", "solution":"27.5 / 100 = 275 / 1000 = 11/40"},
+    {"id":"003-3", "q":"2001 \\times 17 + 3 =", "a":["34020"], "test":"003", "num":"3", "source":"heath", "trickId":"t_distributive", "solution":"34017 + 3 = 34020"},
+    {"id":"003-4", "q":"27 \\times 25 =", "a":["675"], "test":"003", "num":"4", "source":"heath", "trickId":"t_mult_25", "solution":"2700 / 4 = 675"},
+    {"id":"003-5", "q":"2006 \\div 9 =", "a":["222 8/9"], "format":"mixed number", "test":"003", "num":"5", "source":"heath", "trickId":"t_div_9_trick", "solution":"2006 / 9 = 222 R8"},
+    {"id":"003-6", "q":"21 \\times 12 =", "a":["252"], "test":"003", "num":"6", "source":"heath", "trickId":"t_distributive", "solution":"21 * 10 + 21 * 2 = 252"},
+    {"id":"003-7", "q":"\\text{Which is smaller, } \\frac{8}{11} \\text{ or } \\frac{7}{9}?", "a":["8/11"], "test":"003", "num":"7", "source":"heath", "trickId":"t_frac_add", "solution":"Cross multiply: 72 vs 77. 72 is smaller -> 8/11"},
+    {"id":"003-8", "q":"(24+18) \\div 12 \\times (3-6) =", "a":["-10.5", "-21/2", "-10 1/2"], "test":"003", "num":"8", "source":"heath", "trickId":"t_order_of_operations", "solution":"42 / 12 * -3 = -10.5"},
+    {"id":"003-9", "q":"60\\% + .8 - 75\\% =", "a":["13/20"], "format":"fraction", "test":"003", "num":"9", "source":"heath", "trickId":"t_perc_frac", "solution":"0.60 + 0.80 - 0.75 = 0.65 = 65/100 = 13/20"},
+    {"id":"003-10", "q":"2007 - 207 + 702 - 7002 =", "a":["-4500"], "test":"003", "num":"10", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: -4725 to -4275"},
+    {"id":"003-11", "q":"\\text{How many positive integers divide } 63?", "a":["6"], "test":"003", "num":"11", "source":"heath", "trickId":"t_raw_math", "solution":"63 = 3^2 * 7^1. (2+1)(1+1) = 3*2 = 6"},
+    {"id":"003-12", "q":"2\\frac{3}{4} + 6\\frac{7}{8} =", "a":["9 5/8"], "test":"003", "num":"12", "source":"heath", "trickId":"t_frac_add", "solution":"2 6/8 + 6 7/8 = 8 13/8 = 9 5/8"},
+    {"id":"003-13", "q":"\\text{The GCD of } 98 \\text{ and } 56 \\text{ is}", "a":["14"], "test":"003", "num":"13", "source":"heath", "trickId":"t_lcm_gcd_calc", "solution":"98 = 14*7, 56 = 14*4. GCD is 14"},
+    {"id":"003-14", "q":"\\frac{5}{4} + \\frac{4}{5} =", "a":["2 1/20", "41/20"], "test":"003", "num":"14", "source":"heath", "trickId":"t_frac_add", "solution":"(25 + 16) / 20 = 41/20 = 2 1/20"},
+    {"id":"003-15", "q":"38 \\times 74 =", "a":["2812"], "test":"003", "num":"15", "source":"heath", "trickId":"t_distributive", "solution":"38 * 74 = 2812"},
+    {"id":"003-16", "q":"\\text{The multiplicative inverse of } -7.2 \\text{ is}", "a":["-5/36"], "test":"003", "num":"16", "source":"heath", "trickId":"t_negative_zero_exponents", "solution":"-7.2 = -72/10 = -36/5. Inverse is -5/36"},
+    {"id":"003-17", "q":"34 \\times 46 =", "a":["1564"], "test":"003", "num":"17", "source":"heath", "trickId":"t_distributive", "solution":"34 * 46 = 1564"},
+    {"id":"003-18", "q":"15^{2} =", "a":["225"], "test":"003", "num":"18", "source":"heath", "trickId":"t_raw_math", "solution":"15 * 15 = 225"},
+    {"id":"003-19", "q":"\\text{The GCD of } 78 \\text{ and } 114 \\text{ is}", "a":["6"], "test":"003", "num":"19", "source":"heath", "trickId":"t_lcm_gcd_calc", "solution":"78 = 6*13. 114 = 6*19. GCD = 6"},
+    {"id":"003-20", "q":"7532 \\times 1468 =", "a":["11056976"], "test":"003", "num":"20", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 10504128 - 11609824"}
+];
+
+    </script>
+
+    <script>
+const column2 = [
+    {"id":"001-21", "q":"6\\frac{6}{13} \\times 4\\frac{1}{3} =", "a":["28"], "test":"001", "num":"21", "source":"heath", "trickId":"t_frac_add", "solution":"84/13 * 13/3 = 28"},
+    {"id":"001-22", "q":"\\{s,l,o,p,e\\} \\cap \\{l,i,n,e\\} \\text{ has distinct elements}", "a":["2"], "test":"001", "num":"22", "source":"heath", "trickId":"t_set_intersection", "solution":"{l, e} -> 2"},
+    {"id":"001-23", "q":"\\text{Find the area of a square whose diagonal is } 8\\text{in.}", "a":["32"], "test":"001", "num":"23", "source":"heath", "trickId":"t_raw_math", "solution":"d^2 / 2 = 64/2 = 32"},
+    {"id":"001-24", "q":"6 \\text{ pints is what percent of a gallon?}", "a":["75"], "test":"001", "num":"24", "source":"heath", "trickId":"t_unit_conversion", "solution":"6/8 = 0.75 = 75%"},
+    {"id":"001-25", "q":"\\text{Find the simple interest on } \\$500.00 \\text{ at } 5\\% \\text{ for five years. } \\$", "a":["125", "125.00"], "test":"001", "num":"25", "source":"heath", "trickId":"t_raw_math", "solution":"I = PRT = 500 * 0.05 * 5 = 125"},
+    {"id":"001-26", "q":"\\text{Which of the following is a triangular number: } 9, 15, \\text{ or } 18?", "a":["15"], "test":"001", "num":"26", "source":"heath", "trickId":"t_raw_math", "solution":"Triangular numbers: 1, 3, 6, 10, 15..."},
+    {"id":"001-27", "q":"1421 \\div 9 =", "a":["157 8/9"], "format":"mixed number", "test":"001", "num":"27", "source":"heath", "trickId":"t_div_9_trick", "solution":"157 R8"},
+    {"id":"001-28", "q":"(4)^{-1} + (4)^{-2} =", "a":[".3125", "5/16"], "test":"001", "num":"28", "source":"heath", "trickId":"t_negative_zero_exponents", "solution":"0.25 + 0.0625 = 0.3125"},
+    {"id":"001-29", "q":"7.777... - 3.333... =", "a":["40/9", "4 4/9"], "test":"001", "num":"29", "source":"heath", "trickId":"t_raw_math", "solution":"70/9 - 30/9 = 40/9"},
+    {"id":"001-30", "q":"8\\pi^{3} =", "a":["248"], "test":"001", "num":"30", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 236-260"},
+    {"id":"001-31", "q":"\\text{If } x+3y=5 \\text{ and } x-2y=4 \\text{ then } y =", "a":[".2", "1/5"], "test":"001", "num":"31", "source":"heath", "trickId":"t_linear_equation", "solution":"Subtract equations: 5y = 1 -> y = 1/5"},
+    {"id":"001-32", "q":"\\text{If } a=5 \\text{ and } b=3, \\text{ then } (a-b)(a^{2}+ab+b^{2}) =", "a":["98"], "test":"001", "num":"32", "source":"heath", "trickId":"t_diff_cubes", "solution":"125 - 27 = 98"},
+    {"id":"001-33", "q":"\\text{Find the simple interest on } \\$800 \\text{ at } 9\\% \\text{ for two years. } \\$", "a":["144", "144.00"], "test":"001", "num":"33", "source":"heath", "trickId":"t_raw_math", "solution":"I = PRT = 800 * 0.09 * 2 = 144"},
+    {"id":"001-34", "q":"\\text{If } z \\text{ is to } 3 \\text{ as } 5 \\text{ is to } 12 \\text{ then } z =", "a":["5/4", "1.25", "1 1/4"], "test":"001", "num":"34", "source":"heath", "trickId":"t_proportions", "solution":"12z = 15 -> z = 15/12 = 5/4"},
+    {"id":"001-35", "q":"\\text{How many positive integers less than } 30 \\text{ are relatively prime to } 30?", "a":["8"], "test":"001", "num":"35", "source":"heath", "trickId":"t_raw_math", "solution":"Euler Totient function of 30: 30(1-1/2)(1-1/3)(1-1/5) = 8"},
+    {"id":"001-36", "q":"15\\frac{1}{5} \\times 5\\frac{1}{5} =", "a":["79 1/25"], "format":"mixed number", "test":"001", "num":"36", "source":"heath", "trickId":"t_raw_math", "solution":"76/5 * 26/5 = 1976/25 = 79 1/25"},
+    {"id":"001-37", "q":"|6 - |-3 - 6|| =", "a":["3"], "test":"001", "num":"37", "source":"heath", "trickId":"t_absolute_value", "solution":"|6 - 9| = 3"},
+    {"id":"001-38", "q":"5\\frac{1}{4} \\times 5\\frac{3}{4} =", "a":["30 3/16"], "format":"mixed number", "test":"001", "num":"38", "source":"heath", "trickId":"t_raw_math", "solution":"30 3/16"},
+    {"id":"001-39", "q":"14443 \\times 15 =", "a":["216645"], "test":"001", "num":"39", "source":"heath", "trickId":"t_magic_14443", "solution":"202202 + 14443 = 216645"},
+    {"id":"001-40", "q":"\\sqrt{20164} =", "a":["142"], "test":"001", "num":"40", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 135-149"},
+    {"id":"002-21", "q":"6 \\text{ pints is what percent of a gallon?}", "a":["75"], "test":"002", "num":"21", "source":"heath", "trickId":"t_unit_conversion", "solution":"6 pints / 8 pints = 3/4 = 75%"},
+    {"id":"002-22", "q":"24\\% \\text{ of \\_\\_\\_ is } 28\\% \\text{ of } 12.", "a":["14"], "test":"002", "num":"22", "source":"heath", "trickId":"t_proportions", "solution":".24x = .28(12) -> x = 28(12)/24 = 14"},
+    {"id":"002-23", "q":"\\text{If } f(x)=x^{2}-8x+16 \\text{ then } f(24) =", "a":["400"], "test":"002", "num":"23", "source":"heath", "trickId":"t_perfect_sq_trinomial", "solution":"f(x) = (x-4)^2. (24-4)^2 = 20^2 = 400"},
+    {"id":"002-24", "q":"3367 \\times 13 =", "a":["43771"], "test":"002", "num":"24", "source":"heath", "trickId":"t_distributive", "solution":"3367 * 10 + 3367 * 3 = 33670 + 10101 = 43771"},
+    {"id":"002-25", "q":"\\sqrt{40 \\times 160} =", "a":["80"], "test":"002", "num":"25", "source":"heath", "trickId":"t_raw_math", "solution":"sqrt(6400) = 80"},
+    {"id":"002-26", "q":"1421 \\div 9 =", "a":["157 8/9"], "format":"mixed number", "test":"002", "num":"26", "source":"heath", "trickId":"t_div_9_trick", "solution":"1421 / 9 = 157 R8 = 157 8/9"},
+    {"id":"002-27", "q":"\\text{If } 37^{2} - 31^{2} = 2y \\text{ then } y =", "a":["204"], "test":"002", "num":"27", "source":"heath", "trickId":"t_diff_squares", "solution":"(37-31)(37+31) = 6(68) = 408. 2y = 408 -> y=204"},
+    {"id":"002-28", "q":"\\text{The LCM of 32 and 72 is}", "a":["288"], "test":"002", "num":"28", "source":"heath", "trickId":"t_lcm_gcd_calc", "solution":"32 = 2^5, 72 = 2^3 * 3^2. LCM = 2^5 * 3^2 = 32*9 = 288"},
+    {"id":"002-29", "q":"\\text{The largest root of } 3x^{2}-10x+8=0 \\text{ is}", "a":["2"], "test":"002", "num":"29", "source":"heath", "trickId":"t_raw_math", "solution":"(3x-4)(x-2) = 0. Roots are 4/3 and 2. Largest is 2"},
+    {"id":"002-30", "q":"138 \\times 3 \\times 142 =", "a":["58788"], "test":"002", "num":"30", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 55849-61727. Exact: 58788"},
+    {"id":"002-31", "q":"14443 \\times 17 =", "a":["245531"], "test":"002", "num":"31", "source":"heath", "trickId":"t_magic_14443", "solution":"245531"},
+    {"id":"002-32", "q":"75 \\times 284 =", "a":["21300"], "test":"002", "num":"32", "source":"heath", "trickId":"t_cross_cancel", "solution":"3/4 * 28400 = 3 * 7100 = 21300"},
+    {"id":"002-33", "q":"4^{-2} + 3^{0} + 2^{2} =", "a":["81/16", "5.0625", "5 1/16"], "test":"002", "num":"33", "source":"heath", "trickId":"t_negative_zero_exponents", "solution":"1/16 + 1 + 4 = 5 1/16"},
+    {"id":"002-34", "q":"38\\% \\text{ of } 42 \\text{ is } 76\\% \\text{ of }", "a":["21"], "test":"002", "num":"34", "source":"heath", "trickId":"t_proportions", "solution":".38(42) = .76(x) -> x = 42/2 = 21"},
+    {"id":"002-35", "q":"\\text{What is the area of the largest square that can be put in a circle of diameter 6in.?}", "a":["18"], "format":"sq. in.", "test":"002", "num":"35", "source":"heath", "trickId":"t_raw_math", "solution":"Diagonal of square = diameter = 6. Area = d^2/2 = 36/2 = 18"},
+    {"id":"002-36", "q":"\\text{If } x^{3}+30=3 \\text{ then } x =", "a":["-3"], "test":"002", "num":"36", "source":"heath", "trickId":"t_raw_math", "solution":"x^3 = -27 -> x = -3"},
+    {"id":"002-37", "q":"3 \\times 2! + 4 \\times 3! + 5 \\times 4! =", "a":["150"], "test":"002", "num":"37", "source":"heath", "trickId":"t_raw_math", "solution":"6 + 24 + 120 = 150"},
+    {"id":"002-38", "q":"43_{8} - 21_{8} = \\text{\\_\\_\\_}_{8}", "a":["22"], "test":"002", "num":"38", "source":"heath", "trickId":"t_raw_math", "solution":"4-2=2, 3-1=2 -> 22_8"},
+    {"id":"002-39", "q":"1 \\text{ gallon} = \\text{\\_\\_\\_ ounces}", "a":["128"], "test":"002", "num":"39", "source":"heath", "trickId":"t_unit_conversion", "solution":"1 gal = 128 oz"},
+    {"id":"002-40", "q":"\\sqrt[3]{1730} \\times \\sqrt{142} \\times 12 =", "a":["1716"], "test":"002", "num":"40", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 1631-1802. (12 * 11.9 * 12 ≈ 1716)"},
+    {"id":"003-21", "q":"\\text{If } x=5 \\text{ and } y=2 \\text{ then } x^{2}-2xy+y^{2} =", "a":["9"], "test":"003", "num":"21", "source":"heath", "trickId":"t_perfect_sq_trinomial", "solution":"(x-y)^2 = (5-2)^2 = 3^2 = 9"},
+    {"id":"003-22", "q":"6 \\text{ pints is what percent of a gallon?}", "a":["75"], "test":"003", "num":"22", "source":"heath", "trickId":"t_unit_conversion", "solution":"6/8 = 0.75 = 75%"},
+    {"id":"003-23", "q":"423156 \\div 12 \\text{ has a remainder of}", "a":["0"], "test":"003", "num":"23", "source":"heath", "trickId":"t_raw_math", "solution":"423156 is perfectly divisible by 12 (divisible by 3 and 4). Remainder 0"},
+    {"id":"003-24", "q":"\\text{If } 37^{2}-31^{2}=2y \\text{ then } y =", "a":["204"], "test":"003", "num":"24", "source":"heath", "trickId":"t_diff_squares", "solution":"(37-31)(37+31) = 6(68) = 408. 2y=408 -> y=204"},
+    {"id":"003-25", "q":"43 \\times 57 =", "a":["2451"], "test":"003", "num":"25", "source":"heath", "trickId":"t_diff_squares", "solution":"(50-7)(50+7) = 2500 - 49 = 2451"},
+    {"id":"003-26", "q":"2.5 \\text{ pints } = \\text{\\_\\_\\_ cups}", "a":["5"], "test":"003", "num":"26", "source":"heath", "trickId":"t_unit_conversion", "solution":"1 pint = 2 cups. 2.5 * 2 = 5"},
+    {"id":"003-27", "q":"\\sqrt{40 \\times 160} =", "a":["80"], "test":"003", "num":"27", "source":"heath", "trickId":"t_raw_math", "solution":"sqrt(6400) = 80"},
+    {"id":"003-28", "q":"\\text{The number of positive integral divisors of } 48 \\text{ is}", "a":["10"], "test":"003", "num":"28", "source":"heath", "trickId":"t_raw_math", "solution":"48 = 2^4 * 3^1. (4+1)(1+1) = 5*2 = 10"},
+    {"id":"003-29", "q":".5 - .25 - .125 =", "a":["1/8"], "format":"proper fraction", "test":"003", "num":"29", "source":"heath", "trickId":"t_perc_frac", "solution":"1/2 - 1/4 - 1/8 = 4/8 - 2/8 - 1/8 = 1/8"},
+    {"id":"003-30", "q":"\\sqrt{1234} \\times 56 =", "a":["1960"], "test":"003", "num":"30", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 1869-2065"},
+    {"id":"003-31", "q":"\\text{Set } A=\\{m,e,n,t,a,l\\} \\text{ and set } B=\\{m,a,t,h\\}. \\text{ } A \\cap B \\text{ contains how many elements?}", "a":["3"], "test":"003", "num":"31", "source":"heath", "trickId":"t_set_intersection", "solution":"Intersection is {m, a, t}. Count = 3"},
+    {"id":"003-32", "q":"14443 \\times 17 =", "a":["245531"], "test":"003", "num":"32", "source":"heath", "trickId":"t_magic_14443", "solution":"245531"},
+    {"id":"003-33", "q":"\\text{A ticket costs } \\$5.75. \\text{ 12 tickets costs } \\$", "a":["69.00", "69"], "test":"003", "num":"33", "source":"heath", "trickId":"t_distributive", "solution":"5.75 * 12 = 69.00"},
+    {"id":"003-34", "q":"14443 \\times 7 =", "a":["101101"], "test":"003", "num":"34", "source":"heath", "trickId":"t_magic_14443", "solution":"14443 * 7 is the magic number 101101"},
+    {"id":"003-35", "q":"9 - 7 \\times (5+3) \\div 1 =", "a":["-47"], "test":"003", "num":"35", "source":"heath", "trickId":"t_order_of_operations", "solution":"9 - 7(8) = 9 - 56 = -47"},
+    {"id":"003-36", "q":"\\text{The set } \\{T, W, O\\} \\text{ has \\_\\_\\_ proper subsets}", "a":["7"], "test":"003", "num":"36", "source":"heath", "trickId":"t_raw_math", "solution":"2^3 - 1 = 8 - 1 = 7"},
+    {"id":"003-37", "q":".5757... =", "a":["19/33"], "format":"fraction", "test":"003", "num":"37", "source":"heath", "trickId":"t_perc_frac", "solution":"57/99 = 19/33"},
+    {"id":"003-38", "q":"\\text{If } x=-3 \\text{ and } y=-2 \\text{ then } x^{2}-2xy+y^{2} =", "a":["1"], "test":"003", "num":"38", "source":"heath", "trickId":"t_perfect_sq_trinomial", "solution":"(x-y)^2 = (-3 - (-2))^2 = (-1)^2 = 1"},
+    {"id":"003-39", "q":"\\text{If } 5x+7=6x-2 \\text{ then } x =", "a":["9"], "test":"003", "num":"39", "source":"heath", "trickId":"t_linear_equation", "solution":"Subtract 5x: 7 = x - 2 -> x = 9"},
+    {"id":"003-40", "q":"24 \\times 34 \\times 44 =", "a":["35904"], "test":"003", "num":"40", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 34109-37699"}
+];
+
+    </script>
+
+    <script>
+const column3 = [
+    {"id":"001-41", "q":"31 \\times 4! + 36 \\times 3! =", "a":["960"], "test":"001", "num":"41", "source":"heath", "trickId":"t_raw_math", "solution":"31*24 + 36*6 = 744 + 216 = 960"},
+    {"id":"001-42", "q":"\\text{The cube root of } 250,047 \\text{ is}", "a":["63"], "test":"001", "num":"42", "source":"heath", "trickId":"t_raw_math", "solution":"Ends in 7 -> root ends in 3. 250 is between 6^3 (216) and 7^3 (343). Result: 63"},
+    {"id":"001-43", "q":"\\text{The area of the triangle whose base is 6 times its height } h \\text{ is } kh^{2} \\text{ and } k =", "a":["3"], "test":"001", "num":"43", "source":"heath", "trickId":"t_raw_math", "solution":"Area = 1/2 * b * h = 1/2 * 6h * h = 3h^2. k = 3"},
+    {"id":"001-44", "q":"\\text{For what value of } k \\text{ does } x^{2}-3x+k=0 \\text{ have equal roots?}", "a":["9/4", "2.25", "2 1/4"], "test":"001", "num":"44", "source":"heath", "trickId":"t_raw_math", "solution":"Discriminant b^2 - 4ac = 0 -> 9 - 4k = 0 -> k = 9/4"},
+    {"id":"001-45", "q":"\\frac{3}{14} = \\text{\\_\\_\\_}\\%", "a":["21 3/7"], "test":"001", "num":"45", "source":"heath", "trickId":"t_perc_frac", "solution":"300 / 14 = 150 / 7 = 21 3/7%"},
+    {"id":"001-46", "q":"13 \\times 15 + 1 =", "a":["196"], "test":"001", "num":"46", "source":"heath", "trickId":"t_diff_sq_reverse", "solution":"14^2 = 196"},
+    {"id":"001-47", "q":"96 \\times 97 =", "a":["9312"], "test":"001", "num":"47", "source":"heath", "trickId":"t_mult_near_100", "solution":"93, 12 -> 9312"},
+    {"id":"001-48", "q":"45 \\times 95 =", "a":["4275"], "test":"001", "num":"48", "source":"heath", "trickId":"t_mult_end_5", "solution":"4275"},
+    {"id":"001-49", "q":"\\text{The measure of an exterior angle of a regular n-gon is } 18^{\\circ}. \\text{ n =}", "a":["20"], "test":"001", "num":"49", "source":"heath", "trickId":"t_raw_math", "solution":"360 / 18 = 20"},
+    {"id":"001-50", "q":"29 \\times 16 \\times 18 =", "a":["8352"], "test":"001", "num":"50", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 7935-8769"},
+    {"id":"001-51", "q":"12 + 9 + 6.75 + ... =", "a":["48"], "test":"001", "num":"51", "source":"heath", "trickId":"t_geom_series_inf", "solution":"12 / (1 - 3/4) = 48"},
+    {"id":"001-52", "q":"102 \\times 109 =", "a":["11118"], "test":"001", "num":"52", "source":"heath", "trickId":"t_mult_near_100", "solution":"11118"},
+    {"id":"001-53", "q":"\\text{The vertex of the parabola } y=x^{2}+8x \\text{ is } (h,k). \\text{ Find } h.", "a":["-4"], "test":"001", "num":"53", "source":"heath", "trickId":"t_raw_math", "solution":"-b / 2a = -8 / 2 = -4"},
+    {"id":"001-54", "q":"\\text{If y varies inversely with x and } x=4 \\text{ when } y=3, \\text{ find x when } y=8.", "a":["1.5", "3/2", "1 1/2"], "test":"001", "num":"54", "source":"heath", "trickId":"t_raw_math", "solution":"xy = 12 -> 8x = 12 -> x = 1.5"},
+    {"id":"001-55", "q":"\\text{The reciprocal of } 3-4i \\text{ is } a+bi \\text{ and a =}", "a":["3/25", ".12"], "test":"001", "num":"55", "source":"heath", "trickId":"t_raw_math", "solution":"3 / (3^2 + 4^2) = 3/25"},
+    {"id":"001-56", "q":"\\text{How many ways can 5 people be seated 3 at a time in 3 chairs in a row?}", "a":["60"], "test":"001", "num":"56", "source":"heath", "trickId":"t_raw_math", "solution":"5P3 = 5 * 4 * 3 = 60"},
+    {"id":"001-57", "q":"\\text{The sum of the roots of } 2x^{3}-4x^{2}+5x+6=0 \\text{ is}", "a":["2"], "test":"001", "num":"57", "source":"heath", "trickId":"t_raw_math", "solution":"-b/a = 4/2 = 2"},
+    {"id":"001-58", "q":"\\text{A triangle has integral sides of } x, 22, \\text{ and } 22. \\text{ The smallest value of } x \\text{ is}", "a":["1"], "test":"001", "num":"58", "source":"heath", "trickId":"t_raw_math", "solution":"x must be > 0. Smallest integer is 1."},
+    {"id":"001-59", "q":"\\frac{3}{8} \\text{ of a mile = \\_\\_\\_ feet}", "a":["1980"], "test":"001", "num":"59", "source":"heath", "trickId":"t_unit_conversion", "solution":"3/8 * 5280 = 3 * 660 = 1980"},
+    {"id":"001-60", "q":"16 \\times 18 \\times 20 =", "a":["5760"], "test":"001", "num":"60", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 5472-6048"},
+    {"id":"002-41", "q":"212 \\times 311 =", "a":["65932"], "test":"002", "num":"41", "source":"heath", "trickId":"t_mult_3x3", "solution":"65932"},
+    {"id":"002-42", "q":"13 \\times 15 + 1 =", "a":["196"], "test":"002", "num":"42", "source":"heath", "trickId":"t_diff_sq_reverse", "solution":"14^2 = 196"},
+    {"id":"002-43", "q":"\\text{If the GCD of } x \\text{ and 20 is 5 and their LCM is 180, then } x =", "a":["45"], "test":"002", "num":"43", "source":"heath", "trickId":"t_gcd_lcm", "solution":"GCD * LCM = A * B -> 5 * 180 = 20x -> x=45"},
+    {"id":"002-44", "q":"\\text{If a 4x6 picture is enlarged to 6x10, its area is multiplied by}", "a":["5/2", "2.5", "2 1/2"], "test":"002", "num":"44", "source":"heath", "trickId":"t_raw_math", "solution":"Old Area=24. New Area=60. 60/24 = 2.5"},
+    {"id":"002-45", "q":"\\text{The next term of } 2, 7, 22, 67, 202, \\text{\\_\\_\\_ is}", "a":["607"], "test":"002", "num":"45", "source":"heath", "trickId":"t_raw_math", "solution":"Rule: Multiply by 3, add 1. 202*3 + 1 = 607"},
+    {"id":"002-46", "q":"\\text{If the sum of the interior angles of a regular n-gon is } 900^{\\circ} \\text{ then } n =", "a":["7"], "test":"002", "num":"46", "source":"heath", "trickId":"t_raw_math", "solution":"(n-2)180 = 900 -> n-2 = 5 -> n=7"},
+    {"id":"002-47", "q":"14443 \\times 29 =", "a":["418847"], "test":"002", "num":"47", "source":"heath", "trickId":"t_magic_14443", "solution":"418847"},
+    {"id":"002-48", "q":"\\text{A right triangle has integral sides. If one leg is 13 then the other leg is}", "a":["84"], "test":"002", "num":"48", "source":"heath", "trickId":"t_raw_math", "solution":"Pythagorean Triple: 13, 84, 85"},
+    {"id":"002-49", "q":"91 \\times 98 =", "a":["8918"], "test":"002", "num":"49", "source":"heath", "trickId":"t_mult_near_100", "solution":"89, 18 -> 8918"},
+    {"id":"002-50", "q":"\\sqrt{102100} =", "a":["319"], "test":"002", "num":"50", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 304-335"},
+    {"id":"002-51", "q":"\\text{The largest value of } x \\text{ such that } |3x-4| \\le 7 \\text{ is}", "a":["11/3", "3 2/3"], "test":"002", "num":"51", "source":"heath", "trickId":"t_linear_inequality", "solution":"3x-4 <= 7 -> 3x <= 11 -> x <= 11/3"},
+    {"id":"002-52", "q":"\\text{The vertex of the parabola } y=3x^{2}+12x+4 \\text{ is } (h, k) \\text{ and } k =", "a":["-8"], "test":"002", "num":"52", "source":"heath", "trickId":"t_raw_math", "solution":"h = -12/6 = -2. k = 3(-2)^2 + 12(-2) + 4 = 12 - 24 + 4 = -8"},
+    {"id":"002-53", "q":"36^{2} + 57^{2} =", "a":["4545"], "test":"002", "num":"53", "source":"heath", "trickId":"t_raw_math", "solution":"1296 + 3249 = 4545"},
+    {"id":"002-54", "q":"\\frac{7}{9} - \\frac{19}{29} =", "a":["32/261"], "test":"002", "num":"54", "source":"heath", "trickId":"t_frac_add", "solution":"(203 - 171) / 261 = 32/261"},
+    {"id":"002-55", "q":"\\text{A regular polygon with a central angle of } 72^{\\circ} \\text{ has a perimeter of } 60^{\\prime\\prime}. \\text{ Each side is}", "a":["12"], "test":"002", "num":"55", "source":"heath", "trickId":"t_raw_math", "solution":"360/72 = 5 sides. 60/5 = 12"},
+    {"id":"002-56", "q":"\\text{The next term of } 4, 7, 12, 19, 28, \\text{\\_\\_\\_ is}", "a":["39"], "test":"002", "num":"56", "source":"heath", "trickId":"t_raw_math", "solution":"Differences are 3, 5, 7, 9, 11. 28+11 = 39"},
+    {"id":"002-57", "q":"33 \\times 32 =", "a":["1056"], "test":"002", "num":"57", "source":"heath", "trickId":"t_consecutive_mult", "solution":"1056"},
+    {"id":"002-58", "q":"\\text{If } \\frac{3x}{5} \\text{ has a remainder of 4 and } \\frac{3y}{5} \\text{ has a remainder of 1 then } \\frac{xy}{5} \\text{ has a remainder of}", "a":["1"], "test":"002", "num":"58", "source":"heath", "trickId":"t_raw_math", "solution":"3x = 4mod5 -> x = 3. 3y = 1mod5 -> y = 2. xy = 6 = 1mod5"},
+    {"id":"002-59", "q":"12 + 9 + 6.75 + ... =", "a":["48"], "test":"002", "num":"59", "source":"heath", "trickId":"t_geom_series_inf", "solution":"12 / (1 - 3/4) = 48"},
+    {"id":"002-60", "q":"29 \\times 30 \\times 29 \\times 30 =", "a":["756900"], "test":"002", "num":"60", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 719055-794745. Exact: 756900"},
+    {"id":"003-41", "q":"212 \\times 311 =", "a":["65932"], "test":"003", "num":"41", "source":"heath", "trickId":"t_mult_3x3", "solution":"65932"},
+    {"id":"003-42", "q":"\\frac{3}{14} = \\text{\\_\\_\\_}\\%", "a":["21 3/7"], "test":"003", "num":"42", "source":"heath", "trickId":"t_perc_frac", "solution":"300 / 14 = 150 / 7 = 21 3/7%"},
+    {"id":"003-43", "q":"14 \\times 25 + 12.5 \\times 28 =", "a":["700"], "test":"003", "num":"43", "source":"heath", "trickId":"t_shared_factor", "solution":"350 + 350 = 700"},
+    {"id":"003-44", "q":"9^{6} \\times 9^{-4} \\div 9^{-2} = 9^{k}, \\text{ then } k =", "a":["4"], "test":"003", "num":"44", "source":"heath", "trickId":"t_exponent_rules", "solution":"6 - 4 + 2 = 4"},
+    {"id":"003-45", "q":"35 \\times 85 =", "a":["2975"], "test":"003", "num":"45", "source":"heath", "trickId":"t_mult_end_5", "solution":"Ends in 75 because 3+8 is odd. 3*8 + 11/2(floor) = 24+5 = 29 -> 2975"},
+    {"id":"003-46", "q":"\\text{If a 4x6 picture is enlarged to 6x10, its area is multiplied by}", "a":["2.5", "5/2", "2 1/2"], "test":"003", "num":"46", "source":"heath", "trickId":"t_raw_math", "solution":"Old Area=24. New Area=60. 60/24 = 2.5"},
+    {"id":"003-47", "q":"\\text{If } 4x+5>20 \\text{ then } x >", "a":["3.75", "15/4", "3 3/4"], "test":"003", "num":"47", "source":"heath", "trickId":"t_linear_inequality", "solution":"4x > 15 -> x > 15/4 = 3.75"},
+    {"id":"003-48", "q":"\\text{If the area of an equilateral triangle is } 3\\sqrt{3} \\text{ sq inches, its height is}", "a":["3"], "test":"003", "num":"48", "source":"heath", "trickId":"t_raw_math", "solution":"s^2 sqrt(3)/4 = 3 sqrt(3) -> s^2 = 12 -> s = 2 sqrt(3). Height = s sqrt(3)/2 = 3"},
+    {"id":"003-49", "q":"\\text{Find } x, \\text{ if } 3x-y=3 \\text{ and } x-2y=16", "a":["-2"], "test":"003", "num":"49", "source":"heath", "trickId":"t_linear_equation", "solution":"Mult first by 2: 6x-2y=6. Subtract second: 5x = -10 -> x=-2"},
+    {"id":"003-50", "q":"15^{3} \\times 5^{3} =", "a":["421875"], "test":"003", "num":"50", "source":"heath", "trickId":"t_exponent_rules", "solution":"Estimation. Acceptable range: 400782-442968. (75^3 = 421875)"},
+    {"id":"003-51", "q":"\\text{Find } k>0, \\text{ so that the four digit number } 567k \\text{ is divisible by 6.}", "a":["6"], "test":"003", "num":"51", "source":"heath", "trickId":"t_raw_math", "solution":"Must be even and sum (18+k) div by 3. Since k>0, k=6"},
+    {"id":"003-52", "q":"\\text{The hypotenuse of a 30-60 right triangle is 3. The shortest leg is}", "a":["1.5", "3/2", "1 1/2"], "test":"003", "num":"52", "source":"heath", "trickId":"t_trig_reference_angles", "solution":"Short leg = hypotenuse / 2 = 1.5"},
+    {"id":"003-53", "q":"412 \\times 112 =", "a":["46144"], "test":"003", "num":"53", "source":"heath", "trickId":"t_mult_3x3", "solution":"46144"},
+    {"id":"003-54", "q":"\\text{When two dice are tossed, the probability that the sum is 3 is}", "a":["1/18"], "test":"003", "num":"54", "source":"heath", "trickId":"t_raw_math", "solution":"Ways to roll 3: (1,2), (2,1). 2/36 = 1/18"},
+    {"id":"003-55", "q":"\\text{How many 5 letter words can be made using the letters s, c, o, t, t?}", "a":["60"], "test":"003", "num":"55", "source":"heath", "trickId":"t_raw_math", "solution":"5! / 2! (for the two t's) = 120 / 2 = 60"},
+    {"id":"003-56", "q":"123 \\times 301 =", "a":["37023"], "test":"003", "num":"56", "source":"heath", "trickId":"t_distributive", "solution":"123 * 300 + 123 = 36900 + 123 = 37023"},
+    {"id":"003-57", "q":"18\\% \\text{ of } 266 \\text{ is}", "a":["47.88"], "test":"003", "num":"57", "source":"heath", "trickId":"t_perc_frac", "solution":"0.18 * 266 = 47.88"},
+    {"id":"003-58", "q":"62 \\times 68 =", "a":["4216"], "test":"003", "num":"58", "source":"heath", "trickId":"t_mult_units_10", "solution":"Units add to 10. 2*8=16. 6*7=42 -> 4216"},
+    {"id":"003-59", "q":"\\text{Let } |2x+3| \\le 11. \\text{ The least value of } x \\text{ is}", "a":["-7"], "test":"003", "num":"59", "source":"heath", "trickId":"t_absolute_value", "solution":"2x+3 >= -11 -> 2x >= -14 -> x >= -7"},
+    {"id":"003-60", "q":"\\text{The perimeter of } 90x^{2}+150y^{2}=13500 \\text{ is}", "a":["69"], "test":"003", "num":"60", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 66-72"}
+];
+
+    </script>
+
+    <script>
+const column4 = [
+    {"id":"001-61", "q":"\\sin(\\frac{13\\pi}{6}) =", "a":[".5", "1/2"], "test":"001", "num":"61", "source":"heath", "trickId":"t_trig_reference_angles", "solution":"sin(pi/6) = 0.5"},
+    {"id":"001-62", "q":"\\sqrt{444889} =", "a":["667"], "test":"001", "num":"62", "source":"heath", "trickId":"t_raw_math", "solution":"Ends in 9 -> 3 or 7. Near 660^2. Result: 667"},
+    {"id":"001-63", "q":"\\tan(\\frac{\\pi}{3}) =", "a":["\\sqrt{3}"], "test":"001", "num":"63", "source":"heath", "trickId":"t_trig_unit_circle", "solution":"\\sqrt{3}"},
+    {"id":"001-64", "q":"\\text{How many lines are determined by 5 points no 3 of which are collinear?}", "a":["10"], "test":"001", "num":"64", "source":"heath", "trickId":"t_raw_math", "solution":"5C2 = 10"},
+    {"id":"001-65", "q":"1^{2}-2^{2}+3^{2}-4^{2}+...-10^{2} =", "a":["-55"], "test":"001", "num":"65", "source":"heath", "trickId":"t_alt_sum_squares", "solution":"-[10(11)/2] = -55"},
+    {"id":"001-66", "q":"\\text{If } f(x)=3x-\\log_{2}x \\text{ find } f(4)", "a":["10"], "test":"001", "num":"66", "source":"heath", "trickId":"t_raw_math", "solution":"12 - 2 = 10"},
+    {"id":"001-67", "q":"\\ln(e^{2}) =", "a":["2"], "test":"001", "num":"67", "source":"heath", "trickId":"t_log_properties", "solution":"2"},
+    {"id":"001-68", "q":"\\text{The greatest integer function } f(x)=[x] \\text{ has a value of \\_\\_\\_ for } f(\\pi)", "a":["3"], "test":"001", "num":"68", "source":"heath", "trickId":"t_raw_math", "solution":"[3.14] = 3"},
+    {"id":"001-69", "q":"\\text{If } \\log_{4}8=y \\text{ then } y^{2}-1.25 =", "a":["1"], "test":"001", "num":"69", "source":"heath", "trickId":"t_log_properties", "solution":"y = 3/2 = 1.5. 1.5^2 - 1.25 = 2.25 - 1.25 = 1"},
+    {"id":"001-70", "q":"13 \\times 14 \\times 15 \\times 16 =", "a":["43680"], "test":"001", "num":"70", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 41496-45864"},
+    {"id":"001-71", "q":"\\int_{2}^{6} x dx =", "a":["16"], "test":"001", "num":"71", "source":"heath", "trickId":"t_calc_definite_integral", "solution":"1/2(36 - 4) = 16"},
+    {"id":"001-72", "q":"\\text{The rectangular coordinates of the polar coordinates } (3\\sqrt{2}, \\frac{\\pi}{4}) \\text{ are } (x,y). y =", "a":["3"], "test":"001", "num":"72", "source":"heath", "trickId":"t_raw_math", "solution":"r*sin(theta) = 3*sqrt(2) * sqrt(2)/2 = 3"},
+    {"id":"001-73", "q":"\\text{Find } 0 \\le x \\le 6 \\text{ if } 5x+2 \\equiv 8 \\pmod 7.", "a":["4"], "test":"001", "num":"73", "source":"heath", "trickId":"t_raw_math", "solution":"5x = 6 mod 7 -> 5(4) = 20 = 6 mod 7"},
+    {"id":"001-74", "q":"\\text{What is the 5th triangular number?}", "a":["15"], "test":"001", "num":"74", "source":"heath", "trickId":"t_raw_math", "solution":"5*6 / 2 = 15"},
+    {"id":"001-75", "q":"\\lim_{x\\rightarrow0}\\frac{e^{x}-1}{x} =", "a":["1"], "test":"001", "num":"75", "source":"heath", "trickId":"t_limit_ex", "solution":"1"},
+    {"id":"001-76", "q":"\\text{The minimum value of } f(x)=x^{2}-2 \\text{ is}", "a":["-2"], "test":"001", "num":"76", "source":"heath", "trickId":"t_raw_math", "solution":"Vertex at x=0, y=-2"},
+    {"id":"001-77", "q":"\\text{If } f(x)=3x^{2}-2x+1 \\text{ then } f^{\\prime}(-4) =", "a":["-26"], "test":"001", "num":"77", "source":"heath", "trickId":"t_calc_power_rule", "solution":"6(-4) - 2 = -26"},
+    {"id":"001-78", "q":"\\int_{-2}^{2} x^{2} dx =", "a":["16/3", "5 1/3"], "test":"001", "num":"78", "source":"heath", "trickId":"t_calc_definite_integral", "solution":"[x^3/3] = 8/3 - (-8/3) = 16/3"},
+    {"id":"001-79", "q":"\\text{If the initial point of a vector is } (3,7) \\text{ and the terminal point is } (-1,4), \\text{ then } ||v|| =", "a":["5"], "test":"001", "num":"79", "source":"heath", "trickId":"t_raw_math", "solution":"sqrt((-4)^2 + (-3)^2) = 5"},
+    {"id":"001-80", "q":"798 \\div 44\\frac{4}{9}\\% \\times .25 =", "a":["449"], "test":"001", "num":"80", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 427-471"},
+    {"id":"002-61", "q":"\\sin(\\frac{13\\pi}{6}) =", "a":[".5", "1/2"], "test":"002", "num":"61", "source":"heath", "trickId":"t_trig_reference_angles", "solution":"sin(pi/6) = 0.5"},
+    {"id":"002-62", "q":"\\text{If } f(x)=3x-\\log_{2}x, \\text{ find } f(4)", "a":["10"], "test":"002", "num":"62", "source":"heath", "trickId":"t_raw_math", "solution":"12 - 2 = 10"},
+    {"id":"002-63", "q":"(2+3i)(4-5i)=a+bi \\text{ and } b =", "a":["2"], "test":"002", "num":"63", "source":"heath", "trickId":"t_raw_math", "solution":"Inner + Outer: 12i - 10i = 2i. b=2"},
+    {"id":"002-64", "q":"\\cos(\\arcsin 0) =", "a":["1"], "test":"002", "num":"64", "source":"heath", "trickId":"t_inverse_trig", "solution":"cos(0) = 1"},
+    {"id":"002-65", "q":"\\log_{4}27 \\div \\log_{4}3 =", "a":["3"], "test":"002", "num":"65", "source":"heath", "trickId":"t_log_properties", "solution":"log_3(27) = 3"},
+    {"id":"002-66", "q":"3+6+9+...+57 =", "a":["570"], "test":"002", "num":"66", "source":"heath", "trickId":"t_arith_series", "solution":"19 terms. 19/2 * (3+57) = 19*30 = 570"},
+    {"id":"002-67", "q":"\\cos(\\arccos .4) =", "a":[".4", "2/5"], "test":"002", "num":"67", "source":"heath", "trickId":"t_inverse_trig", "solution":"0.4"},
+    {"id":"002-68", "q":"\\frac{5}{6} + 1.2 - 2 =", "a":["1/30"], "test":"002", "num":"68", "source":"heath", "trickId":"t_frac_add", "solution":"5/6 + 6/5 - 2 = (25+36-60)/30 = 1/30"},
+    {"id":"002-69", "q":"1^{2}-2^{2}+3^{2}-4^{2}+...-10^{2} =", "a":["-55"], "test":"002", "num":"69", "source":"heath", "trickId":"t_alt_sum_squares", "solution":"-[10(11)/2] = -55"},
+    {"id":"002-70", "q":"(1+3+5+7+...+39)^{2} =", "a":["160000"], "test":"002", "num":"70", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 152000-168000. Sum is 20^2=400. 400^2=160000"},
+    {"id":"002-71", "q":"\\text{What is the 5th triangular number?}", "a":["15"], "test":"002", "num":"71", "source":"heath", "trickId":"t_raw_math", "solution":"5*6/2 = 15"},
+    {"id":"002-72", "q":"\\text{The circle } x^{2}+4x+y^{2}=12 \\text{ has a radius of}", "a":["4"], "test":"002", "num":"72", "source":"heath", "trickId":"t_raw_math", "solution":"(x+2)^2 - 4 + y^2 = 12 -> = 16. r=4"},
+    {"id":"002-73", "q":"\\text{Let } t_{n} \\text{ denote the nth triangular number. Find } t_{9}+t_{8}", "a":["81"], "test":"002", "num":"73", "source":"heath", "trickId":"t_raw_math", "solution":"t_n + t_(n-1) = n^2. 9^2 = 81"},
+    {"id":"002-74", "q":"\\text{A store has 6 crayon colors. How many different sets of 4 can they sell?}", "a":["126"], "test":"002", "num":"74", "source":"heath", "trickId":"t_raw_math", "solution":"Stars & Bars: (6+4-1)C4 = 9C4 = 126"},
+    {"id":"002-75", "q":"\\sin^{-1}(-0.5) =", "a":["-30"], "format":"degrees", "test":"002", "num":"75", "source":"heath", "trickId":"t_inverse_trig", "solution":"sin(30)=0.5 -> -30 degrees"},
+    {"id":"002-76", "q":"\\frac{1}{3} + \\frac{1}{6} + \\frac{1}{10} + \\frac{1}{15} =", "a":["2/3"], "test":"002", "num":"76", "source":"heath", "trickId":"t_raw_math", "solution":"Sum of reciprocals of triangular numbers = 2/3"},
+    {"id":"002-77", "q":"\\lim_{x\\rightarrow0}\\frac{e^{x}-1}{x} =", "a":["1"], "test":"002", "num":"77", "source":"heath", "trickId":"t_limit_ex", "solution":"1"},
+    {"id":"002-78", "q":"1+3+6+10+...+28 =", "a":["84"], "test":"002", "num":"78", "source":"heath", "trickId":"t_arith_series", "solution":"Sum of first 7 triangular numbers = 7(8)(9)/6 = 84"},
+    {"id":"002-79", "q":"\\lim_{x\\rightarrow2}\\frac{2x^{2}-3x-2}{x-2} =", "a":["5"], "test":"002", "num":"79", "source":"heath", "trickId":"t_limit_ex", "solution":"Derivative of numerator at x=2 -> 4(2)-3 = 5"},
+    {"id":"002-80", "q":"798 \\div 44\\frac{4}{9}\\% \\times .25 =", "a":["449"], "test":"002", "num":"80", "source":"heath", "trickId":"t_raw_math", "solution":"Estimation. Acceptable range: 427-471"},
+    {"id":"003-61", "q":"31^{2} - 33^{2} + 35^{2} - 37^{2} =", "a":["-272"], "test":"003", "num":"61", "source":"heath", "trickId":"t_diff_squares", "solution":"(31-33)(31+33) + (35-37)(35+37) = -2(64) - 2(72) = -272"},
+    {"id":"003-62", "q":"\\frac{5}{6} + 1.2 - 2 =", "a":["1/30"], "test":"003", "num":"62", "source":"heath", "trickId":"t_frac_add", "solution":"5/6 + 6/5 - 2 = (25+36-60)/30 = 1/30"},
+    {"id":"003-63", "q":"\\sin(\\frac{13\\pi}{6}) =", "a":[".5", "1/2"], "test":"003", "num":"63", "source":"heath", "trickId":"t_trig_reference_angles", "solution":"sin(pi/6) = 0.5"},
+    {"id":"003-64", "q":"222_{3} \\times 2_{3} = \\text{\\_\\_\\_}_{3}", "a":["1221"], "test":"003", "num":"64", "source":"heath", "trickId":"t_raw_math", "solution":"26 * 2 = 52. 52 in base 3 is 27 + 2(9) + 2(3) + 1 = 1221"},
+    {"id":"003-65", "q":"\\sin(\\arccos .6) =", "a":[".8", "4/5"], "test":"003", "num":"65", "source":"heath", "trickId":"t_inverse_trig", "solution":"3-4-5 triangle. cos is 3/5 (.6), sin is 4/5 (.8)"},
+    {"id":"003-66", "q":"111 \\times 56 =", "a":["6216"], "test":"003", "num":"66", "source":"heath", "trickId":"t_mult_11", "solution":"6216"},
+    {"id":"003-67", "q":"\\text{The surface area of a sphere with radius 4 is } k\\pi \\text{ and } k =", "a":["64"], "test":"003", "num":"67", "source":"heath", "trickId":"t_raw_math", "solution":"SA = 4*pi*r^2 = 4*pi*16 = 64pi. k=64"},
+    {"id":"003-68", "q":"f(x)=5x^{3}+4x^{2}+3x-2 \\text{ divided by } x+1 \\text{ has a remainder of}", "a":["-6"], "test":"003", "num":"68", "source":"heath", "trickId":"t_raw_math", "solution":"f(-1) = -5 + 4 - 3 - 2 = -6"},
+    {"id":"003-69", "q":"\\text{The dot product for } u=(2,1) \\text{ and } v=(4,3) \\text{ is}", "a":["11"], "test":"003", "num":"69", "source":"heath", "trickId":"t_raw_math", "solution":"(2*4) + (1*3) = 8 + 3 = 11"},
+    {"id":"003-70", "q":"1^{3}+2^{3}+3^{3}+...+6^{3} =", "a":["441"], "test":"003", "num":"70", "source":"heath", "trickId":"t_sum_of_cubes", "solution":"Estimation. Acceptable range: 419-463. Exact: (21)^2 = 441"},
+    {"id":"003-71", "q":"111 \\times \\frac{7}{27} =", "a":["28 7/9"], "format":"mixed number", "test":"003", "num":"71", "source":"heath", "trickId":"t_cross_cancel", "solution":"37 * 7/9 = 259/9 = 28 7/9"},
+    {"id":"003-72", "q":"\\text{If } g(x)=3x+2, \\text{ then } g^{-1}(-1) =", "a":["-1"], "test":"003", "num":"72", "source":"heath", "trickId":"t_inverse_function_point", "solution":"3x+2 = -1 -> 3x = -3 -> x = -1"},
+    {"id":"003-73", "q":"\\int_{1}^{2} x^{3} dx =", "a":["15/4", "3.75", "3 3/4"], "test":"003", "num":"73", "source":"heath", "trickId":"t_calc_definite_integral", "solution":"[x^4 / 4] from 1 to 2 -> 16/4 - 1/4 = 15/4"},
+    {"id":"003-74", "q":"f(x)=x+\\frac{1}{x} \\text{ has \\_\\_\\_ asymptotes}", "a":["2"], "test":"003", "num":"74", "source":"heath", "trickId":"t_rational_asymptotes", "solution":"Vertical at x=0, slant at y=x. Total 2"},
+    {"id":"003-75", "q":"\\text{If } f(x)=\\frac{4x}{5} \\text{ then } f^{-1}(2) =", "a":["2.5", "5/2", "2 1/2"], "test":"003", "num":"75", "source":"heath", "trickId":"t_inverse_function_point", "solution":"4x/5 = 2 -> 4x = 10 -> x = 2.5"},
+    {"id":"003-76", "q":"2 \\times 3 \\times 5 \\times 7 \\times 11 =", "a":["2310"], "test":"003", "num":"76", "source":"heath", "trickId":"t_raw_math", "solution":"210 * 11 = 2310"},
+    {"id":"003-77", "q":"\\text{A pair of dice is thrown. The probability that the sum is 7 is}", "a":["1/6"], "test":"003", "num":"77", "source":"heath", "trickId":"t_raw_math", "solution":"6 ways to roll a 7 out of 36 -> 1/6"},
+    {"id":"003-78", "q":"\\log_{2}[\\log_{2}(\\log_{2}256)] =", "a":["1"], "test":"003", "num":"78", "source":"heath", "trickId":"t_nested_logs", "solution":"Official answer key anomaly says 1 (likely intended log_2(16))"},
+    {"id":"003-79", "q":"\\text{Total surface area of a cube with lateral surface area } 196 \\text{ is}", "a":["294"], "test":"003", "num":"79", "source":"heath", "trickId":"t_raw_math", "solution":"4s^2 = 196 -> s^2 = 49. Total is 6s^2 = 6(49) = 294"},
+    {"id":"003-80", "q":"91.666... \\times 358 =", "a":["32816"], "test":"003", "num":"80", "source":"heath", "trickId":"t_perc_frac", "solution":"Estimation. Acceptable range: 31176-34457"}
+];
+
+    </script>
+    <script>
+        window.onerror = function(msg, src, ln) { alert("Data Error in " + src + " on line " + ln + "\nCheck for missing/extra commas."); };
+
+        let mode = '', activeQuestions = [], questionPool = [], currentQ = null, streak = 0, timerInterval;
+        let errorToggle = false; 
+        let bookmarks = JSON.parse(localStorage.getItem('ns_bookmarks') || '[]');
+        let pendingColumn = null, drillSeconds = 10;
+        let currentSequential = false;
+        let testModeQuestions = [], testModeIndex = 0, testModeScore = 0;
+        let testModeResults = [], reviewIndex = 0;
+        let reviewQuestions = [], reviewResultsList = [];
+        let runLog = [];
+        let knockoutType = 'endurance';
+        let sprintEndOnWrong = false, sprintSkipFeedback = false;
+        let sprintCorrect = 0, sprintAnswered = 0, sprintTimeLeft = 0;
+
+        const SOURCE_LABELS = { official: "Official UIL", heath: "Bryan Heath", monkeysense: "MonkeySense" };
+
+        // Shrinks the question's font size step-by-step until the rendered
+        // content (text or KaTeX math) fits within the box width instead of
+        // overflowing off-screen. Long content still wraps to new lines
+        // (via the CSS above) and grows the box downward; this only kicks
+        // in for a single unbreakable chunk (e.g. one long expression)
+        // that would otherwise stay on one line and run off the edge.
+        function fitQuestionText(el) {
+            const minFontPx = 17; // ~1.06rem floor so text stays readable
+            let fontSize = 28.8; // 1.8rem baseline in px (assumes 16px root)
+            el.style.fontSize = fontSize + "px";
+            let guard = 0;
+            while (el.scrollWidth > el.clientWidth && fontSize > minFontPx && guard < 20) {
+                fontSize -= 1.5;
+                el.style.fontSize = fontSize + "px";
+                guard++;
+            }
+        }
+
+        function normalize(str) { return str.toLowerCase().replace(/&/g, ' ').replace(/\s+/g, ''); }
+        function shuffleArray(array) { let arr = [...array]; for(let i=arr.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+        function formatTime(totalSeconds) {
+            if (totalSeconds < 0) totalSeconds = 0;
+            let m = Math.floor(totalSeconds / 60);
+            let s = totalSeconds % 60;
+            return m > 0 ? `${m}:${s.toString().padStart(2, '0')}` : `${s}`;
+        }
+
+        function getSelectedSources() {
+            let s = new Set();
+            if (document.getElementById('src-official').checked) s.add('official');
+            if (document.getElementById('src-heath').checked) s.add('heath');
+            if (document.getElementById('src-monkeysense').checked) s.add('monkeysense');
+            return s;
+        }
+
+        function getAllQuestions() { return [...column1, ...column2, ...column3, ...column4]; }
+
+        function getFilteredQuestions(rawArray) {
+            const sources = getSelectedSources();
+            if (sources.size === 0) return [];
+            return rawArray.filter(q => sources.has(q.source));
+        }
+
+        function getAvailableTests() {
+            const sources = getSelectedSources();
+            const map = {};
+            getAllQuestions().forEach(q => { if (sources.has(q.source)) map[q.test] = q.source; });
+            return Object.keys(map).sort().map(t => ({ test: t, source: map[t] }));
+        }
+
+        function populateTestSelect(selectId, includeAllOption) {
+            const sel = document.getElementById(selectId);
+            const prevValue = sel.value;
+            const tests = getAvailableTests();
+            sel.innerHTML = "";
+            if (includeAllOption) {
+                let opt = document.createElement('option');
+                opt.value = 'all';
+                opt.text = 'All Tests (Mixed)';
+                sel.appendChild(opt);
+            }
+            tests.forEach(t => {
+                let opt = document.createElement('option');
+                opt.value = t.test;
+                opt.text = "Test " + t.test + " (" + (SOURCE_LABELS[t.source] || t.source) + ")";
+                sel.appendChild(opt);
+            });
+            if ([...sel.options].some(o => o.value === prevValue)) sel.value = prevValue;
+        }
+
+        function refreshTestDropdowns() {
+            populateTestSelect('knockout-test-select', true);
+            if (document.getElementById('testmode-test-list')) populateTestModeList();
+        }
+
+        function startGlobalPractice() {
+            currentSequential = false;
+            let all = [...column1, ...column2, ...column3, ...column4];
+            activeQuestions = getFilteredQuestions(all);
+            if(activeQuestions.length === 0) { alert("No questions matched filter."); return; }
+            questionPool = shuffleArray(activeQuestions);
+            mode = 'practice';
+            document.getElementById('timer').style.display = 'none';
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
+            loadQuestion();
+        }
+
+        function chooseKnockoutType(type) {
+            knockoutType = type;
+            document.getElementById('knockout-type-buttons').style.display = 'none';
+            document.getElementById('knockout-main').style.display = 'block';
+            document.getElementById('sprint-options').style.display = (type === 'sprint') ? 'block' : 'none';
+            populateTestSelect('knockout-test-select', true);
+        }
+
+        function backToKnockoutType() {
+            document.getElementById('knockout-main').style.display = 'none';
+            document.getElementById('pacing-select').style.display = 'none';
+            document.getElementById('custom-pacing').style.display = 'none';
+            document.getElementById('column-buttons').style.display = 'block';
+            document.getElementById('knockout-type-buttons').style.display = 'block';
+        }
+
+        function selectColumn(colName) {
+            pendingColumn = colName;
+            document.getElementById('column-buttons').style.display = 'none';
+            document.getElementById('pacing-select').style.display = 'block';
+            const isSprint = (knockoutType === 'sprint');
+            document.getElementById('pacing-heading').innerText = isSprint ? "Total time for the sprint" : "Seconds per question";
+            document.getElementById('endurance-times').style.display = isSprint ? 'none' : 'block';
+            document.getElementById('sprint-times').style.display = isSprint ? 'block' : 'none';
+        }
+
+        function backToColumns() {
+            document.getElementById('pacing-select').style.display = 'none';
+            document.getElementById('custom-pacing').style.display = 'none';
+            document.getElementById('column-buttons').style.display = 'block';
+        }
+
+        function toggleCustomPacing() {
+            let cp = document.getElementById('custom-pacing');
+            cp.style.display = (cp.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function selectPacing(seconds) {
+            drillSeconds = seconds;
+            beginDrill(pendingColumn);
+        }
+
+        function confirmCustomPacing() {
+            let min = parseInt(document.getElementById('custom-minutes').value) || 0;
+            let sec = parseInt(document.getElementById('custom-seconds').value) || 0;
+            let total = (min * 60) + sec;
+            if (total <= 0) { alert("Enter a time greater than 0 seconds."); return; }
+            drillSeconds = total;
+            beginDrill(pendingColumn);
+        }
+
+        function beginDrill(colName) {
+            let selectedCol;
+            if (colName === 'column1') selectedCol = column1;
+            else if (colName === 'column2') selectedCol = column2;
+            else if (colName === 'column3') selectedCol = column3;
+            else if (colName === 'column4') selectedCol = column4;
+
+            let filtered = getFilteredQuestions(selectedCol);
+            const testFilter = document.getElementById('knockout-test-select').value;
+            if (testFilter && testFilter !== 'all') {
+                filtered = filtered.filter(q => q.test === testFilter);
+            }
+            if (filtered.length === 0) { alert("No questions matched your filters."); return; }
+
+            filtered.sort((a, b) => parseInt(a.num) - parseInt(b.num));
+            const scramble = document.getElementById('knockout-scramble').checked;
+            currentSequential = !scramble;
+            activeQuestions = filtered;
+            questionPool = scramble ? shuffleArray(activeQuestions) : [...activeQuestions].reverse();
+
+            if (knockoutType === 'sprint') {
+                sprintEndOnWrong = document.getElementById('sprint-end-on-wrong').checked;
+                sprintSkipFeedback = document.getElementById('sprint-skip-feedback').checked;
+                sprintCorrect = 0;
+                sprintAnswered = 0;
+                mode = 'sprint';
+            } else {
+                mode = 'drill';
+            }
+
+            runLog = [];
+            document.getElementById('timer').style.display = 'block';
+            document.getElementById('streak-counter').style.display = 'inline';
+            document.getElementById('progress-indicator').style.display = 'none';
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
+            if (mode === 'sprint') startSprintClock();
+            loadQuestion();
+        }
+
+        // The sprint clock runs continuously across questions, unlike the
+        // endurance drill where the timer restarts for each question.
+        function startSprintClock() {
+            clearInterval(timerInterval);
+            sprintTimeLeft = drillSeconds;
+            document.getElementById('timer').innerText = "Time: " + formatTime(sprintTimeLeft);
+            timerInterval = setInterval(() => {
+                sprintTimeLeft--;
+                document.getElementById('timer').innerText = "Time: " + formatTime(sprintTimeLeft);
+                if (sprintTimeLeft <= 0) endSprint("Time's up!");
+            }, 1000);
+        }
+
+        function endSprint(reason) {
+            endRun(reason + "\nCorrect: " + sprintCorrect + " of " + sprintAnswered + " answered.\nBest streak this run: " + streak);
+        }
+
+        function loadQuestion() {
+            // In sprint mode the clock spans the whole run, so it must survive
+            // question changes; every other mode resets its timer here.
+            if (mode !== 'sprint') clearInterval(timerInterval);
+            if (questionPool.length === 0) questionPool = currentSequential ? [...activeQuestions].reverse() : shuffleArray(activeQuestions);
+            currentQ = questionPool.pop();
+            if (mode === 'drill' || mode === 'sprint') runLog.push({ q: currentQ, status: null, given: null });
+            
+            document.getElementById('review-panel').style.display = 'none';
+            document.getElementById('specific-solution').style.display = 'none';
+            document.getElementById('action-buttons').style.display = 'block';
+            document.getElementById('reveal-buttons').style.display = 'none';
+            document.getElementById('next-buttons').style.display = 'none';
+            
+            let ansInput = document.getElementById('answer');
+            ansInput.disabled = false;
+            ansInput.value = "";
+            ansInput.style.color = "white";
+            ansInput.focus();
+            
+            document.getElementById('feedback-msg').innerText = ""; 
+            document.getElementById('metadata').innerText = `Test ${currentQ.test} | Question #${currentQ.num}`;
+            
+            let formatText = currentQ.format ? ` <span style="font-size: 1.2rem; color: #aaaaaa;">(${currentQ.format})</span>` : "";
+            let qEl = document.getElementById('question');
+            qEl.style.fontSize = "1.8rem";
+            qEl.innerHTML = `\\(${currentQ.q}\\)` + formatText;
+            
+            renderMathInElement(qEl, {delimiters: [{left: "\\(", right: "\\)", display: false}]});
+            fitQuestionText(qEl);
+            
+            if(mode === 'drill') {
+                let timeLeft = drillSeconds;
+                document.getElementById('timer').innerText = "Time: " + formatTime(timeLeft);
+                timerInterval = setInterval(() => { 
+                    timeLeft--; 
+                    document.getElementById('timer').innerText = "Time: " + formatTime(timeLeft); 
+                    if(timeLeft <= 0) {
+                        runLog[runLog.length - 1] = { q: currentQ, status: 'skipped', given: '' };
+                        endRun("Knockout! Time's up.\nStreak: " + streak);
+                    } 
+                }, 1000);
+            }
+        }
+        
+        function checkAnswer() {
+            if (mode === 'test') { checkTestModeAnswer(); return; }
+            const userAnsRaw = document.getElementById('answer').value;
+            const userAns = normalize(userAnsRaw);
+            const correctList = currentQ.a.map(a => normalize(a));
+            let feedback = document.getElementById('feedback-msg');
+            
+            let isCorrect = correctList.includes(userAns);
+
+            // UIL 5% Estimation Check Logic (Activates on every 10th question)
+            if (!isCorrect && parseInt(currentQ.num) % 10 === 0) {
+                let userNum = parseFloat(userAnsRaw.replace(/,/g, ''));
+                if (!isNaN(userNum) && currentQ.solution) {
+                    let match = currentQ.solution.match(/range:\s*(-?\d+\.?\d*)\s*(?:-|to)\s*(-?\d+\.?\d*)/i);
+                    if (match) {
+                        let lower = parseFloat(match[1]);
+                        let upper = parseFloat(match[2]);
+                        if (userNum >= lower && userNum <= upper) {
+                            isCorrect = true;
+                        }
+                    }
+                }
+            }
+            
+            if (mode === 'sprint') sprintAnswered++;
+
+            if (isCorrect) {
+                streak++;
+                if (mode === 'sprint') sprintCorrect++;
+                if (mode === 'drill' || mode === 'sprint') {
+                    runLog[runLog.length - 1] = { q: currentQ, status: 'correct', given: userAnsRaw };
+                }
+                document.getElementById('streak-counter').innerText = "Streak: " + streak;
+
+                // Sprint runs can opt out of the result screens entirely and
+                // roll straight into the next question.
+                if (mode === 'sprint' && sprintSkipFeedback) { loadQuestion(); return; }
+
+                showResultScreen(true);
+            } else {
+                if (mode === 'drill') {
+                    runLog[runLog.length - 1] = { q: currentQ, status: 'wrong', given: userAnsRaw };
+                    endRun("Knockout! Wrong Answer.\nCorrect was: " + currentQ.a[0] + "\nStreak: " + streak);
+                    return;
+                }
+                streak = 0;
+                document.getElementById('streak-counter').innerText = "Streak: " + streak;
+
+                if (mode === 'sprint') {
+                    runLog[runLog.length - 1] = { q: currentQ, status: 'wrong', given: userAnsRaw };
+                    if (sprintEndOnWrong) {
+                        endSprint("Knockout! Wrong answer.\nCorrect was: " + currentQ.a[0]);
+                        return;
+                    }
+                    if (sprintSkipFeedback) { loadQuestion(); return; }
+                    showResultScreen(false);
+                    return;
+                }
+
+                document.getElementById('answer').style.color = "#ff6b6b";
+                errorToggle = !errorToggle;
+                feedback.innerText = errorToggle
+                    ? "Answer is incorrect. Try again!"
+                    : "Still incorrect. Give it another shot!";
+                feedback.style.color = "#ff6b6b";
+            }
+        }
+
+        // Shared result screen. On a correct answer it shows the same trick
+        // panel the Help button would, so the tip reinforces what they just
+        // solved, plus Continue / Back to Menu. The per-question timer is
+        // stopped so a won question never keeps counting down on them.
+        function showResultScreen(isCorrect) {
+            if (mode !== 'sprint') clearInterval(timerInterval);
+
+            let feedback = document.getElementById('feedback-msg');
+            let ansInput = document.getElementById('answer');
+            ansInput.disabled = true;
+
+            if (isCorrect) {
+                ansInput.style.color = "#44bbaa";
+                feedback.innerText = "Correct!";
+                feedback.style.color = "#44bbaa";
+            } else {
+                ansInput.style.color = "#ff6b6b";
+                feedback.innerText = "Incorrect. Answer: " + currentQ.a[0];
+                feedback.style.color = "#ff6b6b";
+            }
+
+            const trick = tricksDatabase[currentQ.trickId] || {"title":"No trick mapped", "text":"General arithmetic problem."};
+            document.getElementById('trick-title').innerText = "Trick: " + trick.title;
+            document.getElementById('trick-text').innerText = trick.text;
+            document.getElementById('review-panel').style.display = 'block';
+
+            if (currentQ.solution) {
+                document.getElementById('specific-solution').innerHTML = "<strong>Walkthrough:</strong><br>" + currentQ.solution;
+                document.getElementById('specific-solution').style.display = 'block';
+            }
+
+            document.getElementById('action-buttons').style.display = 'none';
+            document.getElementById('reveal-buttons').style.display = 'none';
+            document.getElementById('next-buttons').style.display = 'block';
+            document.getElementById('btn-next').focus();
+        }
+
+        function skipQuestion() {
+            if (mode === 'test') { skipTestModeQuestion(); return; }
+            if (mode !== 'sprint') clearInterval(timerInterval);
+            if (mode === 'drill' || mode === 'sprint') {
+                runLog[runLog.length - 1] = { q: currentQ, status: 'skipped', given: '' };
+            }
+            streak = 0;
+            document.getElementById('streak-counter').innerText = "Streak: " + streak;
+            loadQuestion();
+        }
+
+        function showTrick() {
+            document.getElementById('review-panel').style.display = 'block';
+            document.getElementById('action-buttons').style.display = 'none';
+            document.getElementById('reveal-buttons').style.display = 'block';
+            const trick = tricksDatabase[currentQ.trickId] || {"title":"No trick mapped", "text":"General arithmetic problem."};
+            document.getElementById('trick-title').innerText = "Trick: " + trick.title;
+            document.getElementById('trick-text').innerText = trick.text;
+        }
+
+        function giveUp() {
+            if (mode !== 'sprint') clearInterval(timerInterval);
+            if (mode === 'drill' || mode === 'sprint') {
+                runLog[runLog.length - 1] = { q: currentQ, status: 'wrong', given: '(gave up)' };
+            }
+            streak = 0;
+            document.getElementById('streak-counter').innerText = "Streak: " + streak;
+            document.getElementById('answer').disabled = true;
+            document.getElementById('answer').value = currentQ.a[0];
+            document.getElementById('answer').style.color = "#ff6b6b";
+            document.getElementById('feedback-msg').innerText = ""; 
+            document.getElementById('reveal-buttons').style.display = 'none';
+            document.getElementById('next-buttons').style.display = 'block';
+            document.getElementById('btn-next').focus();
+            if(currentQ.solution) {
+                document.getElementById('specific-solution').innerHTML = "<strong>Walkthrough:</strong><br>" + currentQ.solution;
+                document.getElementById('specific-solution').style.display = 'block';
+            }
+        }
+
+        function toggleBookmark() {
+            if (bookmarks.includes(currentQ.id)) { 
+                bookmarks = bookmarks.filter(b => b !== currentQ.id); 
+                alert("Bookmark Removed"); 
+            } else { 
+                bookmarks.push(currentQ.id); 
+                alert("Bookmarked!"); 
+            }
+            localStorage.setItem('ns_bookmarks', JSON.stringify(bookmarks));
+        }
+
+        function showColumns() {
+            document.getElementById('col-select').style.display = 'block';
+            document.getElementById('knockout-type-buttons').style.display = 'block';
+            document.getElementById('knockout-main').style.display = 'none';
+            populateTestSelect('knockout-test-select', true);
+        }
+
+        function showTestMode() {
+            document.getElementById('test-mode-select').style.display = 'block';
+            populateTestModeList();
+        }
+
+        function populateTestModeList() {
+            const container = document.getElementById('testmode-test-list');
+            const previously = new Set(getSelectedTestModeTests());
+            const tests = getAvailableTests();
+            container.innerHTML = "";
+            if (tests.length === 0) {
+                container.innerHTML = '<span style="color:#888;">No tests available for the selected sources.</span>';
+                return;
+            }
+            tests.forEach(t => {
+                const label = document.createElement('label');
+                label.style.cssText = "display:block; font-size:0.95rem; margin-bottom:4px; cursor:pointer;";
+                const box = document.createElement('input');
+                box.type = 'checkbox';
+                box.id = 'tm-test-' + t.test;
+                box.value = t.test;
+                box.className = 'tm-test-box';
+                box.style.cssText = "width:auto !important; margin:0 6px 0 0; vertical-align:middle;";
+                // Keep prior ticks when the source filters change; default to
+                // checked the first time a test appears in the list.
+                box.checked = previously.size ? previously.has(t.test) : true;
+                label.appendChild(box);
+                label.appendChild(document.createTextNode("Test " + t.test + " (" + (SOURCE_LABELS[t.source] || t.source) + ")"));
+                container.appendChild(label);
+            });
+        }
+
+        function getSelectedTestModeTests() {
+            return [...document.querySelectorAll('.tm-test-box')].filter(b => b.checked).map(b => b.value);
+        }
+
+        function setAllTestModeTests(state) {
+            document.querySelectorAll('.tm-test-box').forEach(b => { b.checked = state; });
+        }
+
+        // Slot-preserving mix: for each question number, choose randomly among
+        // the selected tests that have that slot. A question never moves to a
+        // different number — only which test supplies it changes.
+        function buildMixedSet(pool) {
+            const byNum = {};
+            pool.forEach(q => {
+                const n = parseInt(q.num);
+                if (!byNum[n]) byNum[n] = [];
+                byNum[n].push(q);
+            });
+            return Object.keys(byNum)
+                .map(Number)
+                .sort((a, b) => a - b)
+                .map(n => byNum[n][Math.floor(Math.random() * byNum[n].length)]);
+        }
+
+        function startTestMode() {
+            const selected = getSelectedTestModeTests();
+            if (selected.length === 0) { alert("Select at least one test."); return; }
+
+            let pool = getFilteredQuestions(getAllQuestions()).filter(q => selected.includes(q.test));
+            if (pool.length === 0) { alert("No questions matched your filters."); return; }
+
+            let set;
+            if (document.getElementById('testmode-mix').checked) {
+                set = buildMixedSet(pool);
+            } else {
+                // No mixing: play the selected tests through, each in order.
+                set = pool.sort((a, b) =>
+                    a.test === b.test ? parseInt(a.num) - parseInt(b.num) : a.test.localeCompare(b.test)
+                );
+            }
+
+            startTestModeSession(set, document.getElementById('testmode-scramble').checked);
+        }
+
+        function startTestModeSession(set, scramble) {
+            testModeQuestions = scramble ? shuffleArray(set) : [...set];
+            testModeIndex = 0;
+            testModeScore = 0;
+            testModeResults = [];
+            mode = 'test';
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
+            document.getElementById('timer').style.display = 'block';
+            document.getElementById('streak-counter').style.display = 'none';
+            document.getElementById('progress-indicator').style.display = 'inline';
+            startTestModeTimer();
+            loadTestModeQuestion();
+        }
+
+        function startTestModeTimer() {
+            clearInterval(timerInterval);
+            let timeLeft = 600; // 10 minutes total, matching real UIL Number Sense timing
+            document.getElementById('timer').innerText = "Time: " + formatTime(timeLeft);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = "Time: " + formatTime(timeLeft);
+                if (timeLeft <= 0) { endTestMode(); }
+            }, 1000);
+        }
+
+        function loadTestModeQuestion() {
+            if (testModeIndex >= testModeQuestions.length) { endTestMode(); return; }
+            currentQ = testModeQuestions[testModeIndex];
+
+            document.getElementById('review-panel').style.display = 'none';
+            document.getElementById('specific-solution').style.display = 'none';
+            document.getElementById('action-buttons').style.display = 'block';
+            document.getElementById('reveal-buttons').style.display = 'none';
+            document.getElementById('next-buttons').style.display = 'none';
+
+            let ansInput = document.getElementById('answer');
+            ansInput.disabled = false;
+            ansInput.value = "";
+            ansInput.style.color = "white";
+            ansInput.focus();
+
+            document.getElementById('feedback-msg').innerText = "";
+            document.getElementById('metadata').innerText = `Test ${currentQ.test} | Question #${currentQ.num}`;
+            document.getElementById('progress-indicator').innerText = `Q ${testModeIndex + 1} of ${testModeQuestions.length}`;
+
+            let formatText = currentQ.format ? ` <span style="font-size: 1.2rem; color: #aaaaaa;">(${currentQ.format})</span>` : "";
+            let qEl = document.getElementById('question');
+            qEl.style.fontSize = "1.8rem";
+            qEl.innerHTML = `\\(${currentQ.q}\\)` + formatText;
+            renderMathInElement(qEl, {delimiters: [{left: "\\(", right: "\\)", display: false}]});
+            fitQuestionText(qEl);
+        }
+
+        function checkTestModeAnswer() {
+            const userAnsRaw = document.getElementById('answer').value;
+            const userAns = normalize(userAnsRaw);
+            const correctList = currentQ.a.map(a => normalize(a));
+            let isCorrect = correctList.includes(userAns);
+
+            if (!isCorrect && parseInt(currentQ.num) % 10 === 0) {
+                let userNum = parseFloat(userAnsRaw.replace(/,/g, ''));
+                if (!isNaN(userNum) && currentQ.solution) {
+                    let match = currentQ.solution.match(/range:\s*(-?\d+\.?\d*)\s*(?:-|to)\s*(-?\d+\.?\d*)/i);
+                    if (match) {
+                        let lower = parseFloat(match[1]), upper = parseFloat(match[2]);
+                        if (userNum >= lower && userNum <= upper) isCorrect = true;
+                    }
+                }
+            }
+
+            let feedback = document.getElementById('feedback-msg');
+            let ansInput = document.getElementById('answer');
+            ansInput.disabled = true;
+            testModeResults[testModeIndex] = { status: isCorrect ? 'correct' : 'wrong', given: userAnsRaw };
+            if (isCorrect) {
+                testModeScore++;
+                ansInput.style.color = "#44bbaa";
+                feedback.innerText = "Correct!";
+                feedback.style.color = "#44bbaa";
+            } else {
+                ansInput.style.color = "#ff6b6b";
+                feedback.innerText = "Incorrect. Answer: " + currentQ.a[0];
+                feedback.style.color = "#ff6b6b";
+            }
+            document.getElementById('action-buttons').style.display = 'none';
+            document.getElementById('next-buttons').style.display = 'block';
+            document.getElementById('btn-next').focus();
+        }
+
+        function skipTestModeQuestion() {
+            if (!testModeResults[testModeIndex]) {
+                testModeResults[testModeIndex] = { status: 'skipped', given: '' };
+            }
+            testModeIndex++;
+            loadTestModeQuestion();
+        }
+
+        function endTestMode() {
+            clearInterval(timerInterval);
+            // Anything never reached (ran out of time) counts as skipped so the
+            // review grid accounts for all 80 slots, not just answered ones.
+            for (let i = 0; i < testModeQuestions.length; i++) {
+                if (!testModeResults[i]) testModeResults[i] = { status: 'skipped', given: '' };
+            }
+            showReviewScreen(
+                testModeQuestions,
+                testModeResults,
+                "Score: " + testModeScore + " / " + testModeQuestions.length
+            );
+        }
+
+        // Shared ending for Knockout Drill (endurance and sprint): converts
+        // the run log built up as questions were served into the same
+        // review format the Test Mode summary uses.
+        function endRun(message) {
+            clearInterval(timerInterval);
+            const questions = runLog.map(e => e.q);
+            const results = runLog.map(e => ({ status: e.status || 'skipped', given: e.given || '' }));
+            showReviewScreen(questions, results, message);
+        }
+
+        function showReviewScreen(questions, results, scoreText) {
+            reviewQuestions = questions;
+            reviewResultsList = results;
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('review-screen').style.display = 'block';
+            document.getElementById('review-score').innerText = scoreText;
+            reviewIndex = 0;
+            renderReviewGrid();
+            loadReviewQuestion();
+        }
+
+        function renderReviewGrid() {
+            const grid = document.getElementById('review-grid');
+            grid.innerHTML = "";
+            reviewQuestions.forEach((q, i) => {
+                const btn = document.createElement('button');
+                const res = reviewResultsList[i] || { status: 'skipped' };
+                btn.className = 'rev-num ' + (
+                    res.status === 'correct' ? 'rev-correct' :
+                    res.status === 'wrong'   ? 'rev-wrong'   : 'rev-skipped'
+                );
+                btn.innerText = q.num;
+                btn.title = "Question " + q.num + " (Test " + q.test + ")";
+                btn.onclick = () => jumpToReview(i);
+                grid.appendChild(btn);
+            });
+            highlightReviewGrid();
+        }
+
+        function highlightReviewGrid() {
+            const boxes = document.querySelectorAll('.rev-num');
+            boxes.forEach((b, i) => b.classList.toggle('rev-active', i === reviewIndex));
+            const active = boxes[reviewIndex];
+            if (active) active.scrollIntoView({ block: 'nearest' });
+        }
+
+        function jumpToReview(i) {
+            reviewIndex = i;
+            loadReviewQuestion();
+        }
+
+        function reviewStep(delta) {
+            const next = reviewIndex + delta;
+            if (next < 0 || next >= reviewQuestions.length) return;
+            reviewIndex = next;
+            loadReviewQuestion();
+        }
+
+        function loadReviewQuestion() {
+            const q = reviewQuestions[reviewIndex];
+            const res = reviewResultsList[reviewIndex] || { status: 'skipped', given: '' };
+
+            document.getElementById('review-position').innerText =
+                "Question " + (reviewIndex + 1) + " of " + reviewQuestions.length;
+            document.getElementById('review-metadata').innerText =
+                "Test " + q.test + " | Question #" + q.num;
+
+            let formatText = q.format ? ` <span style="font-size: 1.1rem; color: #aaaaaa;">(${q.format})</span>` : "";
+            const qEl = document.getElementById('review-question');
+            qEl.innerHTML = `\\(${q.q}\\)` + formatText;
+            renderMathInElement(qEl, {delimiters: [{left: "\\(", right: "\\)", display: false}]});
+
+            let verdict, colour;
+            if (res.status === 'correct')      { verdict = "Correct"; colour = "#44bbaa"; }
+            else if (res.status === 'wrong')   { verdict = "Incorrect"; colour = "#ff6b6b"; }
+            else                               { verdict = "Skipped / unanswered"; colour = "#aaaaaa"; }
+
+            let answersHtml = `<div style="color:${colour}; font-weight:bold; margin-bottom:8px;">${verdict}</div>`;
+            if (res.status !== 'skipped') {
+                answersHtml += `<div style="margin-bottom:6px;">Your answer: <span style="color:${colour};">${escapeHtml(res.given) || "(blank)"}</span></div>`;
+            }
+            answersHtml += `<div>Correct answer: <span style="color:#44bbaa;">${escapeHtml(q.a[0])}</span></div>`;
+            if (q.a.length > 1) {
+                answersHtml += `<div style="color:#888; font-size:0.85rem; margin-top:4px;">Also accepted: ${q.a.slice(1).map(escapeHtml).join(", ")}</div>`;
+            }
+            document.getElementById('review-answers').innerHTML = answersHtml;
+
+            const trick = tricksDatabase[q.trickId] || {"title":"No trick mapped", "text":"General arithmetic problem."};
+            let trickHtml = `<strong>Trick: ${escapeHtml(trick.title)}</strong><br>${escapeHtml(trick.text)}`;
+            if (q.solution) trickHtml += `<div style="margin-top:10px; font-family:monospace; color:#ccc;"><strong>Walkthrough:</strong><br>${escapeHtml(q.solution)}</div>`;
+            document.getElementById('review-trick').innerHTML = trickHtml;
+
+            highlightReviewGrid();
+        }
+
+        function escapeHtml(s) {
+            return String(s == null ? "" : s)
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        // Left/right arrow keys page through the review.
+        document.addEventListener('keydown', e => {
+            if (document.getElementById('review-screen').style.display !== 'block') return;
+            if (e.key === 'ArrowLeft')  { e.preventDefault(); reviewStep(-1); }
+            if (e.key === 'ArrowRight') { e.preventDefault(); reviewStep(1); }
+        });
+
+        function goToNextQuestion() {
+            if (mode === 'test') { testModeIndex++; loadTestModeQuestion(); }
+            else { loadQuestion(); }
+        }
+
+        refreshTestDropdowns();
+    </script>
+</body>
+</html>
